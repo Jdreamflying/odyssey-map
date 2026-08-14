@@ -1,0 +1,1176 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>奥德赛证据地图</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="荷马《奥德赛》十三站的证据分布图：史诗记载、学术推测、考古证据分三层呈现。十三站，十二站能去，四站有考古遗存且地名在史诗之外独立可考，零站能证明奥德修斯到过。">
+<meta name="author" content="">
+<meta name="theme-color" content="#D9D5C7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191712" media="(prefers-color-scheme: dark)">
+
+<!-- 分享卡片。发到码云拿到网址后，把下面这一行的 URL 换成你自己的，微信里转发才会带标题。 -->
+<meta property="og:url" content="">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="奥德赛证据地图 · 十三站，零证据">
+<meta property="og:description" content="十三站，十二站今天能去，四站有考古遗存，零站能证明奥德修斯到过。把史诗记载、学术推测、考古证据分成三层看。">
+<meta name="twitter:card" content="summary_large_image">
+
+<style>
+  /* ══ tokens · light (bare :root = complete palette) ══════════════════ */
+  :root{
+    --bg:        #D9D5C7;   /* 旧亚麻 · 暖纸 */
+    --surface:   #E5E1D4;
+    --surface-2: #CFCAB9;
+    --sea:       #B4BEBD;   /* 冷石板 · 印上去的水域版 */
+    --land:      #D3CFC0;
+    --coast:     #7C8884;
+
+    --grat:      rgba(30,27,20,.11);
+    --rule:      rgba(30,27,20,.17);
+    --rule-soft: rgba(30,27,20,.085);
+
+    --ink:   #1E1B14;   /* 暖黑 */
+    --ink-2: #55503F;
+    --ink-3: #877F6B;
+
+    --ev-hard: #1F6B4F;
+    --ev-conj: #94620F;
+    --ev-myth: #524B7A;
+    --ev-hard-bg: rgba(31,107,79,.13);
+    --ev-conj-bg: rgba(148,98,15,.13);
+    --ev-myth-bg: rgba(82,75,122,.13);
+
+    --accent:    #8E3B2E;   /* 铁锈红 · 仅航迹与「全灭」 */
+    --accent-bg: rgba(142,59,46,.11);
+
+    --shadow: 0 1px 2px rgba(30,27,20,.07), 0 10px 28px -14px rgba(30,27,20,.32);
+
+    --serif: "Palatino Linotype", Palatino, "Iowan Old Style", "Book Antiqua", Georgia,
+             "Songti SC", "Source Han Serif SC", "Noto Serif SC", "SimSun", serif;
+    --sans:  "Helvetica Neue", Helvetica, Arial,
+             "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --mono:  ui-monospace, "SF Mono", "Cascadia Mono", Consolas, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:        #14140F;
+      --surface:   #1C1C15;
+      --surface-2: #23231A;
+      --sea:       #171D1C;
+      --land:      #24241B;
+      --coast:     #54605B;
+
+      --grat:      rgba(229,224,208,.075);
+      --rule:      rgba(229,224,208,.14);
+      --rule-soft: rgba(229,224,208,.07);
+
+      --ink:   #E5E0D0;
+      --ink-2: #9C9682;
+      --ink-3: #726D5D;
+
+      --ev-hard: #4FBE93;
+      --ev-conj: #D8A33F;
+      --ev-myth: #9A90D2;
+      --ev-hard-bg: rgba(79,190,147,.14);
+      --ev-conj-bg: rgba(216,163,63,.14);
+      --ev-myth-bg: rgba(154,144,210,.14);
+
+      --accent:    #D9603F;
+      --accent-bg: rgba(217,96,63,.14);
+
+      --shadow: 0 1px 2px rgba(0,0,0,.45), 0 12px 32px -16px rgba(0,0,0,.75);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#14140F; --surface:#1C1C15; --surface-2:#23231A; --sea:#171D1C; --land:#24241B;
+    --coast:#54605B; --grat:rgba(229,224,208,.075); --rule:rgba(229,224,208,.14);
+    --rule-soft:rgba(229,224,208,.07); --ink:#E5E0D0; --ink-2:#9C9682; --ink-3:#726D5D;
+    --ev-hard:#4FBE93; --ev-conj:#D8A33F; --ev-myth:#9A90D2;
+    --ev-hard-bg:rgba(79,190,147,.14); --ev-conj-bg:rgba(216,163,63,.14); --ev-myth-bg:rgba(154,144,210,.14);
+    --accent:#D9603F; --accent-bg:rgba(217,96,63,.14);
+    --shadow: 0 1px 2px rgba(0,0,0,.45), 0 12px 32px -16px rgba(0,0,0,.75);
+  }
+
+  /* ══ base ═══════════════════════════════════════════════════════════ */
+  *{ box-sizing: border-box; }
+  body{
+    margin:0; background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.72;
+    -webkit-font-smoothing: antialiased; -webkit-text-size-adjust: 100%;
+  }
+  h1,h2,h3{ font-family: var(--serif); margin:0; text-wrap: balance; }
+  h1,h2{ font-weight: 900; }
+  h3{ font-weight: 600; }
+  p{ margin:0; }
+  :focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  .wrap{ max-width: 1280px; margin: 0 auto; padding: 0 24px 72px; }
+
+  /* ══ masthead ═══════════════════════════════════════════════════════ */
+  .masthead{ padding: 52px 0 30px; border-bottom: 1px solid var(--rule); }
+  .eyebrow{
+    font-family: var(--mono); font-size: 11px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 18px;
+  }
+  .masthead h1{ font-size: clamp(32px, 5.4vw, 58px); line-height: 1.1; letter-spacing: -.01em; }
+  .masthead h1 .lat{
+    font-family: var(--serif); font-weight: 400; font-style: italic;
+    color: var(--ink-2); font-size: .55em; letter-spacing: .01em;
+  }
+  .thesis{ margin-top: 22px; max-width: 62ch; font-size: 16.5px; color: var(--ink-2); }
+  .thesis strong{ color: var(--ink); font-weight: 600; }
+
+  .ledger{
+    margin-top: 32px; display: grid; gap: 1px; grid-template-columns: repeat(4, 1fr);
+    background: var(--rule); border: 1px solid var(--rule);
+  }
+  .ledger div{ background: var(--bg); padding: 16px 18px; }
+  .ledger .n{
+    font-family: var(--serif); font-weight: 900; font-size: clamp(28px, 4vw, 36px);
+    line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .ledger .k{ font-size: 12.5px; color: var(--ink-2); margin-top: 8px; line-height: 1.5; }
+  .ledger div:last-child .n{ color: var(--accent); }
+  .ledger div:last-child .k{ color: var(--ink); }
+
+  /* ══ controls ═══════════════════════════════════════════════════════ */
+  .controls{
+    display:flex; flex-wrap: wrap; gap: 9px 8px; align-items: center;
+    padding: 22px 0 20px; border-bottom: 1px solid var(--rule-soft);
+  }
+  .ctl-label{
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-3); margin-right: 2px;
+  }
+  .chip, .btn{
+    font: inherit; font-size: 13px; cursor: pointer;
+    border-radius: 100px; border: 1px solid var(--rule); background: transparent;
+    color: var(--ink-2); transition: background .15s, border-color .15s, color .15s, opacity .15s;
+  }
+  .chip{ display:inline-flex; align-items:center; gap: 7px; padding: 5px 12px 5px 10px; }
+  .btn{ padding: 6px 14px; }
+  .chip:hover, .btn:hover{ border-color: var(--ink-3); color: var(--ink); }
+  .chip .dot{ width: 9px; height: 9px; border-radius: 50%; background: currentColor; flex:none; }
+  .chip[data-ev="hard"]{ color: var(--ev-hard); }
+  .chip[data-ev="conj"]{ color: var(--ev-conj); }
+  .chip[data-ev="myth"]{ color: var(--ev-myth); }
+  .chip[aria-pressed="false"]{ opacity: .36; }
+  .chip[aria-pressed="true"][data-ev="hard"]{ background: var(--ev-hard-bg); border-color: transparent; }
+  .chip[aria-pressed="true"][data-ev="conj"]{ background: var(--ev-conj-bg); border-color: transparent; }
+  .chip[aria-pressed="true"][data-ev="myth"]{ background: var(--ev-myth-bg); border-color: transparent; }
+
+  .btn.proof{ border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .btn.proof:hover{ background: var(--accent-bg); }
+  .btn.proof.on{ background: var(--accent); color: var(--surface); border-color: var(--accent); }
+  .btn.play{ border-color: var(--ink-3); color: var(--ink-2); }
+  .sep{ width:1px; align-self: stretch; background: var(--rule); margin: 0 6px; }
+
+  /* ══ stage ══════════════════════════════════════════════════════════ */
+  .stage{
+    display: grid; gap: 34px; padding-top: 26px; align-items: start;
+    grid-template-columns: minmax(0, 1.42fr) minmax(340px, 1fr);
+  }
+
+  .mapbox{
+    background: var(--sea); border: 1px solid var(--rule);
+    border-radius: 2px; overflow: hidden;
+  }
+  svg.map{ display:block; width:100%; height:auto; }
+  .land{ fill: var(--land); stroke: var(--coast); stroke-width: .9; stroke-linejoin: round; }
+  .grat{ stroke: var(--grat); stroke-width: .7; fill:none; }
+  .gratlabel{ font-family: var(--mono); font-size: 9.5px; fill: var(--ink-3); opacity:.7; }
+
+  .city rect{ fill: var(--ink-3); }
+  .city text{ font-family: var(--sans); font-size: 10px; fill: var(--ink-3);
+              paint-order: stroke; stroke: var(--land); stroke-width: 3px; stroke-linejoin: round; }
+
+  .seg{ fill:none; stroke-linecap: round; stroke-linejoin: round; }
+  .seg.real{ stroke: var(--ink-2); stroke-width: 1.7; opacity:.58; }
+  .seg.myth{ stroke: var(--ink-3); stroke-width: 1.6; opacity:.5; stroke-dasharray: 2 6; }
+  .seg.gate{ stroke: var(--ink-2); stroke-width: 1.6; opacity:.5; stroke-dasharray: 7 5; }
+  .trail{ fill:none; stroke: var(--accent); stroke-width: 2.6;
+          stroke-linecap: round; stroke-linejoin: round; }
+
+  /* 马莱亚角 —— 全图唯一的纯黑线 */
+  .malea-line{ stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 9 4; opacity:.9; }
+  .malea-tag{ font-family: var(--mono); font-size: 10px; fill: var(--ink); letter-spacing:.08em;
+              paint-order: stroke; stroke: var(--sea); stroke-width: 3.4px; stroke-linejoin: round; }
+  .zone-tag{ font-family: var(--serif); font-size: 14px; font-style: italic; fill: var(--ink-2);
+             opacity:.85; paint-order: stroke; stroke: var(--sea); stroke-width: 3.4px; }
+
+  .node{ cursor: pointer; transition: opacity .3s ease; }
+  .node .halo{ fill: var(--sea); }
+  .node .ring{ fill: none; stroke-width: 1.4; }
+  .node .core{ stroke: var(--sea); stroke-width: 1.2; }
+  .node .num{ font-family: var(--mono); font-size: 8.5px; font-weight: 600; fill: var(--sea);
+              text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+  .node .lbl{ font-family: var(--sans); font-size: 11.5px; fill: var(--ink); pointer-events: none;
+              paint-order: stroke; stroke: var(--sea); stroke-width: 3.4px; stroke-linejoin: round; }
+  .node.hard .ring, .node.hard .core{ stroke: var(--ev-hard); } .node.hard .core{ fill: var(--ev-hard); }
+  .node.conj .ring, .node.conj .core{ stroke: var(--ev-conj); } .node.conj .core{ fill: var(--ev-conj); }
+  .node.myth .ring, .node.myth .core{ stroke: var(--ev-myth); } .node.myth .core{ fill: var(--ev-myth); }
+  .node.acc-landmark .ring{ stroke-dasharray: 2.6 2.6; }
+  .node.acc-none .ring{ stroke-dasharray: 1.2 3.4; opacity:.7; }
+  .node .dispute{ fill: var(--ink); font-family: var(--mono); font-size: 9px;
+                  text-anchor: middle; pointer-events: none; }
+  .node .selring{ fill:none; stroke: var(--accent); stroke-width: 1.7; opacity:0; transition: opacity .2s; }
+  .node.sel .selring{ opacity:.95; }
+  .node.sel .lbl{ font-weight: 600; }
+  .node:hover .lbl{ fill: var(--accent); }
+  .node.dim{ opacity: .12; pointer-events: none; }
+  .node.unlit{ opacity: .1; }
+
+  .scalebar path, .scalebar line{ stroke: var(--ink-3); stroke-width: 1; fill:none; }
+  .scaletext{ font-family: var(--mono); font-size: 9.5px; fill: var(--ink-3); }
+
+  /* ══ 全览格 ═════════════════════════════════════════════════════════ */
+  .gallery{ margin-top: 16px; }
+  .gal-head{
+    display:flex; align-items:baseline; justify-content:space-between; gap:14px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--rule-soft); margin-bottom: 14px;
+  }
+  .gal-head h3{ font-family: var(--mono); font-size: 10.5px; font-weight:500; letter-spacing:.14em;
+                text-transform: uppercase; color: var(--ink-3); }
+  .gal-head span{ font-size: 12.5px; color: var(--ink-3); }
+  .grid{ display:grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+  .tile{
+    font: inherit; cursor: pointer; padding: 8px 6px 9px; text-align: center;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 2px;
+    color: var(--ink-2); transition: opacity .3s, border-color .15s, background .15s;
+    display:flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .tile:hover{ border-color: var(--ink-3); }
+  .tile.sel{ border-color: var(--accent); background: var(--accent-bg); }
+  .tile.dim{ opacity: .17; }
+  .tile .idx{ font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); letter-spacing:.06em; }
+  .tile .nm{ font-size: 11.5px; line-height: 1.3; color: var(--ink); }
+
+  .illus{ display:block; width: 100%; max-width: 78px; height:auto; }
+  .illus .ln{ fill:none; stroke: var(--ink-2); stroke-width: 1.7;
+              stroke-linecap: round; stroke-linejoin: round; }
+  .illus .thin{ stroke-width: 1.1; opacity:.72; }
+  .illus .dash{ stroke-dasharray: 3.5 3.5; }
+  .illus .fl{ fill: var(--ink-2); stroke: none; }
+  .illus .sea path{ fill:none; stroke-linecap: round; stroke-width: 2.6; }
+  .illus .sea path.b{ stroke-width: 1.7; opacity:.55; }
+  .illus.hard .sea path{ stroke: var(--ev-hard); }
+  .illus.conj .sea path{ stroke: var(--ev-conj); }
+  .illus.myth .sea path{ stroke: var(--ev-myth); }
+
+  /* ══ card ═══════════════════════════════════════════════════════════ */
+  .card{
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 2px; box-shadow: var(--shadow); position: sticky; top: 22px;
+  }
+  .card-illus{
+    display:flex; align-items:center; justify-content:center;
+    padding: 18px 0 8px; border-bottom: 1px solid var(--rule-soft); background: var(--surface-2);
+  }
+  .card-illus .illus{ max-width: 116px; }
+  .card-head{ padding: 20px 24px 18px; border-bottom: 1px solid var(--rule-soft); }
+  .card-meta{
+    display:flex; align-items:center; gap: 9px; flex-wrap: wrap;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .badge{ display:inline-flex; align-items:center; gap:6px; padding: 2px 9px;
+          border-radius: 100px; letter-spacing: .06em; }
+  .badge.hard{ background: var(--ev-hard-bg); color: var(--ev-hard); }
+  .badge.conj{ background: var(--ev-conj-bg); color: var(--ev-conj); }
+  .badge.myth{ background: var(--ev-myth-bg); color: var(--ev-myth); }
+  .badge.dispute{ background: transparent; color: var(--ink); border: 1px solid var(--rule); }
+
+  .card-head h2{ font-size: 26px; line-height: 1.25; margin-top: 12px; }
+  .card-head .lat{ font-family: var(--serif); font-style: italic; font-weight: 400;
+                   font-size: 14px; color: var(--ink-3); margin-top: 4px; }
+  .oneline{ margin-top: 14px; font-family: var(--serif); font-size: 17.5px; line-height: 1.62; }
+
+  /* 定位小图 */
+  .locator{ padding: 16px 24px 0; }
+  .locator .lbox{ background: var(--sea); border: 1px solid var(--rule); border-radius: 2px; }
+  .locator svg{ display:block; width:100%; height:auto; }
+  .locator .addr{
+    margin-top: 8px; font-size: 12.5px; color: var(--ink-2); line-height: 1.6;
+    display:flex; gap: 8px; align-items: baseline;
+  }
+  .locator .addr b{ font-family: var(--mono); font-size: 10px; letter-spacing:.12em;
+                    text-transform: uppercase; color: var(--ink-3); flex:none; font-weight:500; }
+
+  .card-body{ padding: 4px 24px 22px; }
+  .fld{ padding: 17px 0; border-bottom: 1px solid var(--rule-soft); }
+  .fld:last-child{ border-bottom: 0; padding-bottom: 4px; }
+  .fld h3{ font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: .14em;
+           text-transform: uppercase; color: var(--ink-3); margin-bottom: 7px; }
+  .fld p{ font-size: 14.2px; color: var(--ink-2); line-height: 1.78; }
+  .fld p em{ font-style: normal; color: var(--ink); font-weight: 600; }
+  .fld p + p{ margin-top: 9px; }
+
+  .flag{
+    margin-top: 11px; padding: 11px 13px; border-radius: 2px;
+    background: var(--accent-bg); font-size: 13.4px; line-height: 1.7; color: var(--ink);
+  }
+  .flag b{ color: var(--accent); font-weight: 600; }
+
+  .fld.limit{ background: var(--surface-2); margin: 17px -24px 0; padding: 17px 24px;
+              border-bottom: 0; border-top: 1px solid var(--rule-soft); }
+  .fld.limit h3{ color: var(--ink); }
+  .fld.limit .yes{ color: var(--ink); font-size: 14.2px; line-height: 1.78; }
+  .fld.limit .no{ color: var(--ink-2); font-size: 14.2px; line-height: 1.78; margin-top: 9px;
+                  padding-left: 14px; border-left: 2px solid var(--ink); }
+  .fld.limit .no b{ color: var(--ink); font-weight: 600; }
+
+  .quote{ margin-top: 12px; padding: 10px 0 10px 15px; border-left: 2px solid var(--rule);
+          font-family: var(--serif); font-size: 14.5px; line-height: 1.7; color: var(--ink); }
+  .quote cite{ display:block; font-family: var(--mono); font-style: normal; font-size: 10.5px;
+               letter-spacing: .1em; color: var(--ink-3); margin-top: 8px; }
+
+  .nav{ display:flex; gap: 8px; padding: 0 24px 22px; }
+  .nav button{ flex:1; font: inherit; font-size: 12.5px; cursor: pointer; padding: 8px;
+               border-radius: 2px; border: 1px solid var(--rule); background: transparent; color: var(--ink-2); }
+  .nav button:hover{ border-color: var(--ink-3); color: var(--ink); }
+
+  /* 「全灭」空态 */
+  .void{ padding: 46px 26px 42px; text-align: left; }
+  .void .k{ font-family: var(--mono); font-size: 10.5px; letter-spacing:.16em;
+            text-transform: uppercase; color: var(--accent); }
+  .void h2{ font-size: clamp(30px, 4.6vw, 40px); line-height: 1.18; margin-top: 14px; color: var(--accent); }
+  .void p{ margin-top: 18px; font-size: 15px; line-height: 1.85; color: var(--ink-2); max-width: 34ch; }
+  .void p.last{ margin-top: 16px; font-family: var(--serif); font-size: 19px; line-height: 1.6;
+                color: var(--ink); font-weight: 600; }
+
+  /* ══ 分布 / 图例 / 页脚 ═════════════════════════════════════════════ */
+  .dist{ margin-top: 22px; border: 1px solid var(--rule); border-radius: 2px; padding: 18px 20px; }
+  .dist h3, .legend h3, .refs h3{
+    font-family: var(--mono); font-size: 10.5px; font-weight:500; letter-spacing:.14em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 13px;
+  }
+  .dbar{ display:flex; height: 9px; border-radius: 100px; overflow:hidden; gap: 2px; }
+  .dkey{ display:flex; flex-wrap:wrap; gap: 6px 18px; margin-top: 13px; font-size: 12.5px; color: var(--ink-2); }
+  .dkey i{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; font-style:normal; }
+  .dnote{ margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--rule-soft);
+          font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+  .dnote b{ color: var(--ink); font-weight: 600; }
+
+  .legend{ margin-top: 34px; padding-top: 26px; border-top: 1px solid var(--rule);
+           display:grid; gap: 26px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+  .legend ul{ margin:0; padding:0; }
+  .legend li{ list-style:none; font-size: 13px; color: var(--ink-2); margin-bottom: 10px;
+              display:flex; gap: 10px; align-items: flex-start; line-height: 1.62; }
+  .legend .sw{ flex:none; margin-top: 5px; }
+  .legend b{ color: var(--ink); font-weight: 600; }
+
+  .refs{ margin-top: 40px; padding-top: 26px; border-top: 1px solid var(--rule); }
+  .refs ol{ margin:0; padding-left: 20px; columns: 2; column-gap: 40px; }
+  .refs li{ font-size: 12.6px; line-height: 1.7; color: var(--ink-2);
+            margin-bottom: 9px; break-inside: avoid; }
+  .refs li b{ color: var(--ink); font-weight: 600; }
+  .refs .cap{ font-size: 12.6px; color: var(--ink-3); margin-bottom: 14px; max-width: 70ch; }
+  @media (max-width: 720px){ .refs ol{ columns: 1; } }
+
+  footer{ margin-top: 40px; padding-top: 26px; border-top: 1px solid var(--rule);
+          font-size: 12.8px; color: var(--ink-3); line-height: 1.8; max-width: 74ch; }
+  footer b{ color: var(--ink-2); font-weight: 600; }
+  footer .tag{ font-family: var(--mono); font-size: 11px; letter-spacing:.1em; color: var(--ink-2); }
+  footer p + p{ margin-top: 12px; }
+
+  /* ══ 竖屏 / 窄屏 ════════════════════════════════════════════════════ */
+  @media (max-width: 940px){
+    .stage{ grid-template-columns: minmax(0,1fr); gap: 24px; }
+    .wrap{ padding: 0 16px 56px; }
+    .card{ position: static; }
+    .ledger{ grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 620px){
+    body{ font-size: 15px; }
+    .masthead{ padding: 34px 0 24px; }
+    /* 地图按宽度缩到底，绝不横向溢出 —— 十三个点必须同框 */
+    .mapbox{ overflow: hidden; }
+    svg.map .lbl,
+    svg.map .city text,
+    svg.map .gratlabel,
+    svg.map .zone-tag{ display: none; }
+    svg.map .malea-tag{ font-size: 13px; }
+    .node .num{ font-size: 12px; }
+    .node .ring{ r: 14; }
+    .grid{ grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .tile .nm{ font-size: 10.5px; }
+    .illus{ max-width: 62px; }
+    .card-head, .card-body, .locator, .nav{ padding-left: 17px; padding-right: 17px; }
+    .fld.limit{ margin-left: -17px; margin-right: -17px; padding-left: 17px; padding-right: 17px; }
+    .card-head h2{ font-size: 23px; }
+    .controls{ gap: 8px 6px; }
+    .void{ padding: 38px 20px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">证据地图 · 荷马《奥德赛》· 依故事时序排列</div>
+    <h1>奥德修斯漂过的十三站<br><span class="lat">Where the Evidence Actually Is</span></h1>
+    <p class="thesis">
+      这不是一张行程图，是一张<strong>证据分布图</strong>。每一站都分开标出三件事：
+      荷马原文怎么写、学者推测它在哪、地下究竟挖出了什么。
+      三者经常对不上——而对不上的地方，才是这张地图想讲的。
+    </p>
+    <div class="ledger">
+      <div><div class="n">13</div><div class="k">史诗中的停靠站</div></div>
+      <div><div class="n">12</div><div class="k">今天有明确地点可去</div></div>
+      <div><div class="n">4</div><div class="k">地名在史诗之外独立可考</div></div>
+      <div><div class="n">0</div><div class="k">能证明奥德修斯到过</div></div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <span class="ctl-label">证据等级</span>
+    <button class="chip" data-ev="hard" aria-pressed="true"><span class="dot"></span>有考古遗存 4</button>
+    <button class="chip" data-ev="conj" aria-pressed="true"><span class="dot"></span>学术推测 4</button>
+    <button class="chip" data-ev="myth" aria-pressed="true"><span class="dot"></span>后世指认 5</button>
+    <span class="sep" aria-hidden="true"></span>
+    <button class="btn proof" id="proof">只看能证明奥德修斯到过的</button>
+    <button class="btn" id="reset">全部显示</button>
+    <span class="sep" aria-hidden="true"></span>
+    <button class="btn play" id="play">▶ 播放航线</button>
+  </div>
+
+  <div class="stage">
+    <div>
+      <div class="mapbox"><svg class="map" id="map" role="img"
+        aria-label="地中海东部与中部海图，标出《奥德赛》十三个停靠站及其证据等级"></svg></div>
+
+      <section class="gallery">
+        <div class="gal-head">
+          <h3>十三站全览</h3>
+          <span>每张图底下那条海线，就是这一站的证据等级</span>
+        </div>
+        <div class="grid" id="grid"></div>
+      </section>
+
+      <div class="legend">
+        <div>
+          <h3>圆心颜色 · 证据等级</h3>
+          <ul>
+            <li><svg class="sw" width="11" height="11"><circle cx="5.5" cy="5.5" r="5" fill="var(--ev-hard)"></circle></svg>
+              <span><b>有考古遗存</b>　被指认的地点上有已发掘的遗存，<em style="font-style:normal;color:var(--ink)">且该地名在史诗之外独立可考</em></span></li>
+            <li><svg class="sw" width="11" height="11"><circle cx="5.5" cy="5.5" r="5" fill="var(--ev-conj)"></circle></svg>
+              <span><b>学术推测</b>　古代或近代学者提出的对应，有地理或词源理由，但地名的来源就是史诗本身</span></li>
+            <li><svg class="sw" width="11" height="11"><circle cx="5.5" cy="5.5" r="5" fill="var(--ev-myth)"></circle></svg>
+              <span><b>后世指认</b>　对应关系由后人指认，或史诗的描述本身即不可能成立</span></li>
+          </ul>
+          <p style="font-size:12.5px;color:var(--ink-3);line-height:1.7;margin-top:4px">
+            绿色标的是「遗存存在」，不是「功能已定」。有几站挖出过重要东西却不是绿色——
+            奇尔切奥、埃奥利、科孚——因为那里的地名是<b style="color:var(--ink-2)">后人用神话命名的</b>，
+            命名方向反了。
+          </p>
+        </div>
+        <div>
+          <h3>外圈线型 · 今天有什么</h3>
+          <ul>
+            <li><svg class="sw" width="13" height="13"><circle cx="6.5" cy="6.5" r="5.5" fill="none" stroke="var(--ink-2)" stroke-width="1.4"></circle></svg><span><b>有遗址可走</b>　存在经过发掘、可以走进去的考古现场</span></li>
+            <li><svg class="sw" width="13" height="13"><circle cx="6.5" cy="6.5" r="5.5" fill="none" stroke="var(--ink-2)" stroke-width="1.4" stroke-dasharray="2.6 2.6"></circle></svg><span><b>只有地貌与命名</b>　有明确打卡点，但那里没有任何遗址</span></li>
+            <li><svg class="sw" width="13" height="13"><circle cx="6.5" cy="6.5" r="5.5" fill="none" stroke="var(--ink-2)" stroke-width="1.4" stroke-dasharray="1.2 3.4" opacity=".7"></circle></svg><span><b>连指认点都没有</b>　只有一片推定区域</span></li>
+            <li><span class="sw" style="font-family:var(--mono);font-size:11px;color:var(--ink);margin-top:0">†</span><span><b>学界仍在争论</b>　该站的关键结论目前没有共识</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>航线线型 · 地理可信度</h3>
+          <ul>
+            <li><svg class="sw" width="26" height="7"><line x1="1" y1="3.5" x2="25" y2="3.5" stroke="var(--ink-2)" stroke-width="1.8" opacity=".6"></line></svg><span><b>实线</b>　此段地名在古代地理中可考</span></li>
+            <li><svg class="sw" width="26" height="7"><line x1="1" y1="3.5" x2="25" y2="3.5" stroke="var(--ink-3)" stroke-width="1.7" stroke-dasharray="2 6"></line></svg><span><b>虚线</b>　此段已脱离任何可确认的地理</span></li>
+            <li><svg class="sw" width="26" height="7"><line x1="1" y1="3.5" x2="25" y2="3.5" stroke="var(--ink)" stroke-width="1.7" stroke-dasharray="9 4"></line></svg><span><b>黑线</b>　马莱亚角——两个世界之间的门槛。全图唯一的纯黑线，因为它是文本事实，不是证据等级</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <article class="card" id="card" aria-live="polite"></article>
+
+      <div class="dist">
+        <h3>十三站的证据分布</h3>
+        <div class="dbar">
+          <span style="flex:4;background:var(--ev-hard)"></span>
+          <span style="flex:4;background:var(--ev-conj)"></span>
+          <span style="flex:5;background:var(--ev-myth)"></span>
+        </div>
+        <div class="dkey">
+          <span><i style="background:var(--ev-hard)"></i>有考古遗存 4</span>
+          <span><i style="background:var(--ev-conj)"></i>学术推测 4</span>
+          <span><i style="background:var(--ev-myth)"></i>后世指认 5</span>
+        </div>
+        <p class="dnote">
+          绿色那 4 站，证明的都只是「这地方存在过、而且它的名字不是从这首诗里来的」。
+          没有一站证明「这里发生过史诗写的事」。
+          <b>地下挖出的是城墙、酒、房子、台阶，不是故事。</b>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <section class="refs">
+    <h3>参考文献</h3>
+    <p class="cap">
+      页面中每一处具体主张都可回溯到下列出处。凡属争议的地方，双方均已列出。
+    </p>
+    <ol>
+      <li>荷马《奥德赛》。中译本：<b>王焕生</b>译，人民文学出版社；<b>陈中梅</b>译，上海译文出版社。</li>
+      <li>希罗多德《历史》4.177（食莲族在利比亚海岸）。</li>
+      <li>修昔底德《伯罗奔尼撒战争史》<b>1.25</b>（科西拉人自称淮阿喀亚人后裔）、<b>6.2</b>（西西里最早居民传说为库克罗普斯与莱斯特律戈涅斯）。两处均为转述，非表态。</li>
+      <li>斯特拉波《地理学》1.2.15（埃拉托色尼「缝风袋的鞋匠」，及斯特拉波对他的反驳）。</li>
+      <li>赫西俄德《神谱》1011–1016（喀耳刻之子统治提勒尼亚人）。<b>这几行普遍被认为是后人增补。</b></li>
+      <li>维吉尔《埃涅阿斯纪》卷三（埃特纳山下的波吕斐摩斯）。</li>
+      <li>G. Beckman, T. Bryce &amp; E. Cline, <b><i>The Ahhiyawa Texts</i></b>, SBL, 2011（赫梯档案中的 Wilusa 与 Ahhiyawa，含《阿拉克桑度条约》）。</li>
+      <li>C. W. Blegen, <i>Troy and the Trojans</i>, 1963（Troy VIIa 说）；W. Dörpfeld, <i>Troja und Ilion</i>, 1902（Troy VI 说）。</li>
+      <li>S. Dakaris, <b><i>The Antiquity of Epirus: The Acheron Necromanteion</i></b>, Athens, 1973（死灵庙的指认；另见其 1976 年《普林斯顿古典遗址百科》Ephyra 词条）。</li>
+      <li>反驳意见，三篇递进：<b>D. Baatz</b>, <i>Archäologischer Anzeiger</i>, 1979（首次指出出土铁件为弩炮部件）；同作者, “Hellenistische Katapulte aus Ephyra (Epirus)”, <i>MDAI(A)</i> 97, 1982, 211–233（完整刊布，<b>雅典分部</b>，非罗马分部）；同作者, <i>Antike Welt</i> 30.2, 1999, 151–155（提出「设防贵族宅邸」）。</li>
+      <li><b>J. Wiseman</b>, “Rethinking the ‘Halls of Hades’”, <i>Archaeology</i> 51.3, 1998, 12–18（主张该建筑为农业塔楼基座，地下室系储水或储粮空间）。</li>
+      <li>R. Bittlestone, with J. Diggle &amp; J. Underhill, <b><i>Odysseus Unbound: The Search for Homer’s Ithaca</i></b>, Cambridge University Press, 2005（帕利基半岛假说）。</li>
+      <li>伊萨基发掘：<b>L. Kontorli-Papadopoulou &amp; Th. Papadopoulos</b> 主持，约阿尼纳大学，<b>1994–2011</b>。正式刊布见 Th. Papadopoulos 于第十六届国际爱琴海会议宣读之论文，收入 <i>HESPEROS: The Aegean Seen from the West</i>, Peeters, Leuven, 2017。</li>
+      <li>伊萨基最新进展：希腊文化部 2025 年公布，<b>Giannos Lolos</b> 主持，新出土约 30 件公元前 14–13 世纪陶器残片及一处保存完整的叠涩砌法地下泉室。</li>
+      <li>V. Bérard, <i>Les Navigations d’Ulysse</i>, 4 vols., Paris, 1927–1929；E. Bradford, <i>Ulysses Found</i>, 1963；T. Severin, <i>The Ulysses Voyage</i>, 1987（近代对应传统与复原航行）。</li>
+    </ol>
+  </section>
+
+  <footer>
+    <p class="tag">关于这张图的取材与分寸</p>
+    <p>
+      站点<b>依故事时序排列，不是卷次顺序</b>——俄古癸亚出现在卷五，斯刻里亚在卷六至卷十三，
+      而卷九到卷十二的全部漂流，是奥德修斯本人在淮阿喀亚人的宴席上追述的。也就是说，
+      <b>这张地图上大部分地点的来源，是一个刚被救起、正在向陌生贵族要一条船的人的自述。</b>
+    </p>
+    <p>
+      各站的现代对应地，多数并非现代学者的结论，而是古代地理学家与罗马时代旅游业的指认。
+      这里要说清一件常被误用的事：修昔底德在卷一和卷六<b>都只是转述</b>——转述科西拉人的自我宣称，
+      转述关于西西里早期居民的传说，两处都没有下判断。<b>是后世把他的转述当成了证据。</b>
+    </p>
+    <p>
+      早在公元前三世纪，埃拉托色尼就说过：<b>「等你找到缝那只风袋的鞋匠，你就能找到奥德修斯漂过哪儿。」</b>
+      斯特拉波专门写文章反驳他。关于这张地图存不存在的争论，已经进行了两千三百年。
+    </p>
+    <p>
+      插图为矢量线稿，与地图使用同一套笔画语言，<b>是示意图，不假冒文物照片</b>；
+      其中泥板、三腿徽、戈耳工山墙三项另有实物可查，见参考文献。
+    </p>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ══ 数据 ═════════════════════════════════════════════════════════ */
+  const S = [
+  {
+    n:"特洛伊", lat:"Troy / Ilios", book:"全篇前史",
+    lon:26.239, la:39.957, ev:"hard", acc:"site", lp:"e", dispute:false,
+    addr:"土耳其恰纳卡莱省希萨利克丘，恰纳卡莱市南约 30 km",
+    one:"十年攻城结束，船队从这里出发。",
+    homer:"荷马称之为伊利昂，城墙由波塞冬与阿波罗亲手筑起。《奥德赛》开篇第一句就用「他劫掠了特洛伊的圣城」来定义这个人——在返乡的故事开始之前，他先是一个屠城者。",
+    schol:"土耳其达达尼尔海峡南岸的希萨利克丘。1871 年施里曼开挖以来，此地为特洛伊已成共识。但「哪一层是荷马的特洛伊」始终有分歧：布莱根主张毁于战火的第七层 a（约前 1180），德尔普费尔德一派主张规模宏大、毁于地震的第六层（约前 1300）。",
+    arch:"九层城市叠压，城墙、塔楼、下城区均已发掘。但真正硬的旁证不在地下而在档案：赫梯泥板中反复出现 Wilusa（对应 Ilios）与 Ahhiyawa（可能对应阿开亚人），其中《阿拉克桑度条约》的签约方名叫 Alakšandu——与帕里斯的别名亚历山德罗斯同形。<em>这是全图唯一一个在史诗之外有同时代外国文献佐证的地名。</em>",
+    yes:"希萨利克确有一座青铜时代的城市，反复被毁又反复重建；当时的近东强权知道它、和它签过约、用的还是同一个名字。",
+    no:"不能证明希腊联军围城十年，不能证明木马，也不能证明奥德修斯这个人存在。赫梯档案里有城名，没有战争。",
+    today:"特洛伊考古遗址（1998 年列入世界遗产）；恰纳卡莱的特洛伊博物馆 2018 年开馆，出土文物集中于此。",
+    flag:null, q:null
+  },
+  {
+    n:"伊斯马罗斯", lat:"Ismaros · 喀孔涅斯人之地", book:"卷九",
+    lon:25.52, la:40.87, ev:"hard", acc:"site", lp:"ne", dispute:false,
+    addr:"希腊东马其顿-色雷斯大区马罗尼亚，科莫蒂尼东南约 30 km",
+    one:"返航第一站，他们洗劫了这座城，代价是七十二条人命。",
+    homer:"离开特洛伊后立刻攻破的城，杀男掠女。他唯独放过阿波罗祭司马戎，得到十二罐未掺水的烈酒——正是这几罐酒，后来灌醉了独眼巨人。船员贪杯不肯走，喀孔涅斯人搬来援军，每条船折损六人。",
+    schol:"色雷斯的伊斯马罗斯，希腊东北部马罗尼亚一带。这是整段漂流中<em>唯一一个有确切、可考地名的地点</em>——荷马给了一个真实存在的城、一个真实存在的部族，和一种真实存在的酒。",
+    arch:"马罗尼亚古城遗址真实存在并已发掘：剧场、城墙、狄俄尼索斯圣所、马赛克宅。但年代主要属古典至罗马时期，晚于史诗设定的青铜时代数百年。地名与酒名的连续性才是这一站的硬证据——「伊斯马罗斯」至今仍是当地葡萄酒产区的名字。",
+    yes:"色雷斯海岸确有名为伊斯马罗斯的地方，确以烈酒著称，且这个名字在史诗之外独立流传至今。",
+    no:"不能证明喀孔涅斯人之战发生过。遗址是真的，剧情不是——这是全图第一次出现这种错位，也是最容易被忽略的一次。",
+    today:"马罗尼亚考古遗址（色雷斯，可自由参观），以及仍在出产的伊斯马罗斯葡萄酒产区。",
+    flag:null, q:null
+  },
+  {
+    n:"食莲人之地", lat:"Lotophagi", book:"卷九",
+    lon:10.85, la:33.80, ev:"conj", acc:"landmark", lp:"s", dispute:false,
+    addr:"突尼斯杰尔巴岛，加贝斯东南约 90 km",
+    one:"吃了那种花的人，就再也不想回家了。",
+    homer:"绕过马莱亚角后被北风吹了九天，第十天靠岸。当地人以「花一般的食物」为食，尝过的人立刻忘记归途、只想留下。奥德修斯把哭喊的船员绑上船，强行开走——全篇第一次，回家变成一件需要被强迫的事。",
+    schol:"传统对应突尼斯的杰尔巴岛。这个指认非常早：希罗多德《历史》第四卷就把食莲族放在利比亚海岸。「洛托斯」可能指北非确实生长的枣莲（Ziziphus lotus），果实可食、可酿酒。",
+    arch:"没有。杰尔巴岛的古代遗迹属腓尼基与罗马时期，与史诗情节无关。",
+    yes:"北非海岸确有一种可食的「莲」，古人也确实把食莲族安置在那一带。",
+    no:"不能证明有过一个以此为生的族群，更不能证明船队到过。这是一次古代地理学家为了让故事落地而做的安置，不是发现。",
+    today:"杰尔巴岛是真实存在的旅游岛，但与史诗的关联仅止于两千五百年前的一次文本推定。",
+    flag:null, q:null
+  },
+  {
+    n:"独眼巨人洞", lat:"Cyclops · Polyphemus", book:"卷九",
+    lon:15.16, la:37.56, ev:"myth", acc:"landmark", lp:"se", dispute:false,
+    addr:"意大利西西里阿奇特雷扎，卡塔尼亚北约 12 km",
+    one:"他自称「无人」，然后弄瞎了波塞冬的儿子——十年漂流真正的起点。",
+    homer:"巨人不耕种、不聚会、不识法度，各自在山洞里管自家妻儿。波吕斐摩斯挤奶做酪、吃掉六名船员。奥德修斯用马戎的烈酒灌醉他，烧红橄榄木桩刺瞎独眼，报上假名「无人」逃脱。离岸时他忍不住喊出真名——于是波塞冬有了要报复的对象。",
+    schol:"荷马<em>从未指明位置</em>。目前能追到的最早文本是修昔底德《伯罗奔尼撒战争史》卷六开篇：西西里最早的居民「据说」是库克罗普斯与莱斯特律戈涅斯——但他紧接着说，这些事他留给诗人去讲。这是转述，不是背书。罗马诗人（维吉尔在《埃涅阿斯纪》卷三让埃涅阿斯在埃特纳山下遇见波吕斐摩斯）才把它固化成常识。",
+    arch:"零。没有任何一处遗址曾被严肃主张与此情节相关。",
+    yes:"什么都没有证明。这一站是全图证据最薄的一处。",
+    no:"这里没有可被证伪的东西——因为从头到尾没有人提出过一个可检验的主张。",
+    today:"西西里阿奇特雷扎海面上的「独眼巨人礁」（Faraglioni dei Ciclopi），传说是波吕斐摩斯朝逃跑的船投出的巨石。游客如织，证据为零——这是全图最典型的一站：<em>最好拍的地方，往往最没有依据</em>。",
+    flag:null, q:null
+  },
+  {
+    n:"风神岛", lat:"Aeolia", book:"卷十",
+    lon:15.21, la:38.79, ev:"myth", acc:"landmark", lp:"nw", dispute:false,
+    addr:"意大利斯特龙博利岛（埃奥利群岛），墨西拿以北约 70 km",
+    one:"他把所有逆风装进一只皮袋送给奥德修斯。船员以为里面是金子，打开了。",
+    homer:"一座<em>漂浮的</em>岛，四周环以不可摧毁的青铜围墙。风神埃俄罗斯用九岁公牛的皮袋装住所有不利的风，以银绳系口，只留西风送他回家。第十天已经望见伊萨卡的岸火，奥德修斯睡着了，船员解开皮袋——一口气吹回原点。",
+    schol:"传统对应利帕里、斯特龙博利等埃奥利群岛。但荷马给的两个特征——会漂浮、有青铜围墙——在字面上不对应任何真实岛屿。这是全篇少有的、描述本身就宣告了自己是虚构的地方。",
+    arch:"利帕里有极重要的新石器时代黑曜石贸易遗址，是地中海史前经济的关键节点。<em>但这一站仍然不是绿色</em>——因为埃奥利群岛这个名字，是后人用风神来命名的。",
+    yes:"埃奥利群岛真实存在，岛上也确有重要考古遗存。",
+    no:"命名的方向是反的：先有神话，才有地名。用地名反推史实，是这张图上最常见、也最难察觉的陷阱——本页把它写成了分类规则。",
+    today:"埃奥利群岛（世界遗产）。斯特龙博利火山至今持续喷发，夜间可见岩浆。",
+    flag:null, q:null
+  },
+  {
+    n:"莱斯特律戈涅斯", lat:"Laestrygonians", book:"卷十",
+    lon:13.57, la:41.21, ev:"myth", acc:"none", lp:"nw", dispute:false,
+    addr:"意大利拉齐奥加埃塔湾一带（推定区域），罗马东南约 120 km",
+    one:"十二条船进港，十一条被巨人砸沉。只剩他自己那条留在港外。",
+    homer:"「白昼与黑夜的路途相近」——牧人赶羊归来时另一人正要出门，暗示极短的夜。港湾深邃，两侧峭壁合抱，只有一道窄口。奥德修斯把船停在口外，因此只有他活下来。这是全篇最惨重的一次损失：一夜之间从十二条船变成一条。",
+    schol:"与独眼巨人同源——修昔底德卷六把库克罗普斯与莱斯特律戈涅斯并列为西西里传说中的早期居民，罗马传统则把这一站定位到意大利的福尔米亚—加埃塔一带。但「夜极短」的描述指向高纬度，与地中海完全不符——这是全篇地理上<em>最不自洽的一处</em>。有学者据此认为荷马采用了来自北方的航海传说。",
+    arch:"无。",
+    yes:"加埃塔湾确有环抱式深港，地形与描述相似。",
+    no:"相似不等于证据。而且这个相似还得先无视「夜极短」——即便完全按地理去读，这一站也读不通。",
+    today:"没有任何被指认的点位。加埃塔和福尔米亚是真实城镇，但没有一处地方声称自己是那个港湾。<em>全图唯一一站，连打卡点都没有。</em>",
+    flag:null, q:null
+  },
+  {
+    n:"埃埃亚岛", lat:"Aeaea · Circe", book:"卷十",
+    lon:13.09, la:41.24, ev:"conj", acc:"site", lp:"w", dispute:false,
+    addr:"意大利拉齐奥奇尔切奥山，罗马东南约 90 km",
+    one:"她把船员变成猪，然后留他住了一年。",
+    homer:"女神喀耳刻之岛，可望见「日出之处」。她用药碗和魔杖把先遣队变成猪——保留人的心智。奥德修斯靠赫尔墨斯给的草药抵抗，此后留下整整一年，是船员自己提醒他该走了。也是她指出：想回家，得先去一趟冥府。",
+    schol:"传统对应意大利拉齐奥海岸的奇尔切奥山——一座从滨海平原上孤零零拔起的山峰，古代因沼泽环绕而近似半岛。地名直接取自喀耳刻。最早的意大利关联见赫西俄德《神谱》1011–1016，说喀耳刻之子统治提勒尼亚人（伊特鲁里亚）。",
+    arch:"奇尔切奥山有重要的旧石器时代洞穴（瓜塔里洞，1939 年出土尼安德特人颅骨），但年代早了十万年。<em>这一站有真遗存却不是绿色</em>——奇尔切奥这个名字来自喀耳刻，命名方向反了。",
+    yes:"确有一座名为「喀耳刻」的山，从海上看去形似孤岛，符合荷马的地貌描述。",
+    no:"不能证明有过喀耳刻，也无法判定是山名来自故事、还是故事来自山名。",
+    today:"奇尔切奥国家公园，可登顶，山顶有史前环形石墙遗迹。",
+    flag:"赫西俄德《神谱》1011–1016 那几行，<b>在学界普遍被认为是后人增补的</b>。一段被后人加进去、又被更后来的人拿去给意大利定位的文字——这本身就是这张图想讲的事，所以标出来，不藏。",
+    q:null
+  },
+  {
+    n:"冥府入口", lat:"Nekyia", book:"卷十一",
+    lon:20.53, la:39.24, ev:"hard", acc:"site", lp:"ne", dispute:true,
+    addr:"希腊伊庇鲁斯 Mesopotamos 村，帕尔加以东约 22 km",
+    one:"他没有下地狱。他在地面挖了个坑，让死者上来。",
+    homer:"按喀耳刻的指点，在阿刻戎河、皮里佛勒革同河与科库托斯河交汇处掘一个一肘见方的坑，献祭黑羊，让亡魂闻血而来。他见到了忒瑞西阿斯、母亲、阿伽门农、阿喀琉斯。<em>这三条河，是荷马在整段漂流中给出的最具体的一组地理坐标。</em>",
+    schol:"阿刻戎河在希腊伊庇鲁斯真实存在，至今仍叫这个名字——这是它被归入绿色的唯一理由。1958 年起，考古学家 Sotirios Dakaris 发掘 Mesopotamos 的一组建筑，主张这就是古代文献中的「死灵庙」（Nekromanteion），也就是荷马所指之处。这一说法进了几十年的教科书和旅游手册。",
+    arch:"建筑确凿存在并已完整发掘：厚墙、迷宫式通道、地下拱顶室，出土铁制机械构件。<em>但反驳是三篇递进的</em>：Baatz 1979 年首次指出那些铁件是弩炮部件，1982 年在 MDAI(A) 97 完整刊布，1999 年在 Antike Welt 提出这是一座「设防贵族宅邸」。另有 J. Wiseman 1998 年主张它是农业塔楼的基座，地下室系储水或储粮空间。争议至今未平。",
+    yes:"阿刻戎河是真的，名字在史诗之外独立流传至今；河畔确有一座公元前三至二世纪的大型建筑，已完整发掘。",
+    no:"不能证明它是神谕所——功能仍在争论。更不能证明荷马指的是这里：荷马写的是青铜时代，这栋房子晚了近一千年。",
+    today:"Nekromanteion 遗址（帕尔加附近）对公众开放，可以走下台阶进入地下拱顶室。<em>全图最耐读的一站：四层证据俱全，且每一层都在打架。</em>",
+    flag:"绿色在这里只表示<b>遗存存在、且阿刻戎这个地名独立可考</b>，不表示这栋建筑的功能已有定论。功能之争写在上面那一栏里，没有被颜色抹掉。",
+    q:null
+  },
+  {
+    n:"斯库拉与卡律布狄斯", lat:"Scylla & Charybdis", book:"卷十二",
+    lon:15.63, la:38.25, ev:"conj", acc:"landmark", lp:"sw", dispute:false,
+    addr:"意大利／西西里之间的墨西拿海峡，墨西拿市区即在岸边",
+    one:"一边吃掉你六个人，一边吞掉整条船。他选了前者，没告诉船员。",
+    homer:"先过塞壬（他把自己绑上桅杆，塞住船员的耳朵），再入一道两崖夹峙的窄水道：一侧是六头怪物斯库拉，一侧是每日三吞三吐的巨涡卡律布狄斯。喀耳刻明说过必须选斯库拉——牺牲六个，胜过全船覆没。他照做了，且事先隐瞒。",
+    schol:"自古典时代起即对应墨西拿海峡。海峡确有因两侧潮汐相位差形成的涡流，当地称 garofalo，至今可见。这是最容易让人点头的一次对应。",
+    arch:"无遗存。而且这里藏着一个方法上的陷阱：<em>「海峡有漩涡，所以这就是卡律布狄斯」是循环论证</em>——先有故事，再去找地形；找到相似地形，反过来当作故事的证据。所以这一站的插图画的不是漩涡，是海图上标漩涡用的那个记号。",
+    yes:"墨西拿海峡确有强潮涌与涡流，对古代小船是真实威胁。",
+    no:"不能证明荷马写的是这里。地中海有涡流的海峡不止一处，选中它的是叙事需要与后世传统，不是证据。",
+    today:"墨西拿海峡，乘渡轮十几分钟可穿越。两岸各有一座名叫 Scilla 与 Cariddi 的地方——名字是后配的。",
+    flag:null, q:null
+  },
+  {
+    n:"特里纳基亚", lat:"Thrinacia · 太阳神之牛", book:"卷十二",
+    lon:14.50, la:37.00, ev:"myth", acc:"landmark", lp:"s", dispute:false,
+    addr:"意大利西西里岛（全岛），拉古萨、卡塔尼亚一带",
+    one:"他警告过别碰那些牛。他们饿了一个月，还是碰了。",
+    homer:"赫利俄斯的牛群与羊群在此放牧，各七群、每群五十头，不生不死。逆风困住船队一个月，粮尽。奥德修斯去祈祷时睡着，船员宰了牛。开船后宙斯降下雷电劈碎船身——<em>所有剩下的船员死在这里，此后他是独自一人。</em>",
+    schol:"Thrinakia（意为「三叉」）自古被读作 Trinacria——西西里因三角形轮廓而得的古称。但这是词源上的攀附，不是地理上的确认：先有相似的词，再有相同的地方。",
+    arch:"无。",
+    yes:"西西里确实呈三角形，古称确实是 Trinacria。",
+    no:"两个词像，不代表两个地方是同一个。这一站的全部依据，是一次发音上的巧合。",
+    today:"西西里岛。那面三腿人首的 Trinacria 旗徽至今仍是西西里自治区的区旗，印在所有官方文件上——<em>一次词源攀附，最后变成了一个行政区的正式标志。</em>",
+    flag:null, q:null
+  },
+  {
+    n:"俄古癸亚岛", lat:"Ogygia · Calypso", book:"卷五 · 卷七",
+    lon:14.24, la:36.05, ev:"myth", acc:"landmark", lp:"s", dispute:false,
+    addr:"马耳他戈佐岛拉姆拉湾，瓦莱塔西北约 25 km",
+    one:"全程最长的一站——七年。而且不是漂流，是被留下。",
+    homer:"位于「海的肚脐」，远离一切人烟与航路。女神卡吕普索许他永生不死、永葆青春，他拒绝了，理由是想再看一眼自己的妻子——而佩涅洛佩必将老去死去。这是全篇最核心的一次选择：<em>他用不朽换了一个会死的人</em>。宙斯派赫尔墨斯来才放了他。",
+    schol:"传统对应马耳他的戈佐岛，古代已有此说。但也有相当多的学者主张它根本不指任何实地：所谓「海的肚脐」、远离一切航路，在叙事上正是「世界之外」的意思，写的是一个不在地图上的地方。",
+    arch:"无。戈佐的「卡吕普索洞」是近代命名。",
+    yes:"什么都没有。这一站的对应，是旅游业与古代文人共同完成的。",
+    no:"荷马几乎明说了它不在已知世界里。把它标到地图上，本身就违背了原文的意思——这一站的存在，正好说明了做这张地图的悖论。",
+    today:"戈佐岛拉姆拉湾上方的「卡吕普索洞」观景台。洞体因岩层不稳已长期封闭，只能站在平台上远眺——<em>一个进不去的洞，纪念一个不存在的地方。</em>",
+    flag:null, q:null
+  },
+  {
+    n:"斯刻里亚", lat:"Scheria · 淮阿喀亚人", book:"卷六—卷十三",
+    lon:19.92, la:39.62, ev:"conj", acc:"site", lp:"nw", dispute:false,
+    addr:"希腊科孚岛（科西拉），科孚老城即在岛上",
+    one:"整部漂流史，是他在这里的宴席上亲口讲出来的。",
+    homer:"淮阿喀亚人是完美的航海者，船不需要舵手，会自己认路。公主瑙西卡在河边洗衣时遇见赤身的落难者。宴席上盲诗人德摩多科斯唱起特洛伊，他掩面而泣，于是被问起姓名——<em>卷九到卷十二的全部冒险，都是从这一刻开始的自述</em>。他们送他回家，因此被波塞冬把船变成了石头。",
+    schol:"传统对应科孚岛（古称科西拉）。修昔底德《伯罗奔尼撒战争史》卷一 25 节记下科西拉人自称淮阿喀亚人后裔——注意，他记的是<em>这个族群的自我宣称</em>，不是他自己的判断。他在卷六谈西西里时是同一种姿态：只转述，不表态。",
+    arch:"科孚有真实的古代科西拉城遗址，其中阿尔忒弥斯神庙的戈耳工山墙（约前 580 年）是现存最早的希腊石制神庙山墙之一，现藏科孚考古博物馆。<em>但这一站不是绿色</em>——淮阿喀亚的对应来自科西拉人自己的宣称，命名方向同样是反的。",
+    yes:"科孚确有古城与重要神庙，且古人自己就相信这里是淮阿喀亚。",
+    no:"不能证明淮阿喀亚人存在。更要紧的是：<em>这一站是整张地图的叙事框架</em>——前面九站的信息来源，是一个刚被救起、正在向陌生贵族要一条船的人的自述。",
+    today:"科孚老城（世界遗产）；老鼠岛（Pontikonisi）被当地传说指为被波塞冬变成石头的那条淮阿喀亚船。",
+    flag:"这一站的插图不是山墙，是宴席上盲诗人的竖琴。<b>荷马在诗里画了一个自己</b>——前面九站你看到的一切，都是从这件东西里唱出来的。",
+    q:null
+  },
+  {
+    n:"伊萨卡", lat:"Ithaca", book:"卷十三—卷二十四",
+    lon:20.71, la:38.40, ev:"hard", acc:"site", lp:"e", dispute:true,
+    addr:"希腊伊萨基岛埃克西村附近，帕特雷西北约 110 km",
+    one:"他到家了，然后又花了十二卷，才让人认出他是谁。",
+    homer:"卷九开头他自报家门：伊萨卡「地势低平，位于最外侧，朝向幽暗之处」，周围是杜利基昂、萨墨、扎昆索斯。回岛后他伪装成乞丐，第一个认出他的是老狗阿尔戈斯——它摇了摇尾巴，然后死了。整部史诗二十四卷，返乡只花了半卷，剩下的都在讲一个人如何重新成为自己。",
+    schol:"今伊萨基岛为传统对应地，但它多山、不低平，也不是最西——<em>与荷马的自述直接矛盾</em>。2005 年 Robert Bittlestone 在《Odysseus Unbound》中提出：真正的伊萨卡是凯法利尼亚岛西部的帕利基半岛，古代曾以一道海峡与主岛分隔，后因地震填塞。剑桥古典学者 James Diggle 与地质学家 John Underhill 参与其中。",
+    arch:"伊萨基岛北部埃克西村附近的「荷马学校」遗址，由约阿尼纳大学的 Litsa Kontorli-Papadopoulou 与 Thanasis Papadopoulos 主持，<em>1994 至 2011 年系统发掘</em>，出土迈锡尼时期的阶梯、平台与凿岩水井。正式刊布见 Papadopoulos 收入《HESPEROS》（Peeters, 2017）的论文。2025 年希腊文化部公布新一轮成果，由 Giannos Lolos 主持，新出土约 30 件公元前 14–13 世纪陶器残片，以及一处保存完整的叠涩砌法地下泉室——<em>这一站到今天还在出东西。</em>",
+    yes:"伊萨基岛上确有迈锡尼时期的聚落与建筑，青铜时代这里住着人；岛名也在史诗之外一路沿用至今。",
+    no:"没有任何铭文或器物能把它和奥德修斯或伊萨卡王室联系起来。而且「岛名沿用至今」是四站绿色里<em>最弱的一条</em>——这个名字的延续本身就可能来自史诗传统，而这恰恰是比特尔斯通质疑的地方。连这个故事的终点在哪，今天都还在吵。",
+    today:"伊萨基岛的「荷马学校」遗址与斯塔夫罗斯考古博物馆；对岸凯法利尼亚的帕利基半岛。",
+    flag:"引用这一站的发掘时必须知道：<b>主要发掘者不是中立方。</b>Papadopoulos 的英文专著直接叫《The Archaeological Evidence for the Palace of Odysseus on Ithaca》，序言称发掘结果「被掩盖」。这是主张性写作，不是中立报告。本页的论点是「分清谁在主张什么」——那就得先把这一条说出来。",
+    q:{t:"她认出了那道疤，扔下他的脚——脚落进盆里，青铜嗡然作响，盆歪到一边，水洒了一地。", c:"卷十九 · 老乳母欧律克勒亚为他洗脚"}
+  }
+  ];
+
+  const MALEA = {lon:23.19, la:36.43};
+
+  /* 现代城市 —— major 者才在主图标注 */
+  const CITY = [
+    {n:"罗马",       lon:12.50, la:41.90, major:true},
+    {n:"巴勒莫",     lon:13.36, la:38.12, major:true},
+    {n:"突尼斯",     lon:10.18, la:36.80, major:true},
+    {n:"瓦莱塔",     lon:14.51, la:35.90, major:true},
+    {n:"雅典",       lon:23.73, la:37.98, major:true},
+    {n:"塞萨洛尼基", lon:22.94, la:40.64, major:true},
+    {n:"恰纳卡莱",   lon:26.41, la:40.15, major:true},
+    {n:"那不勒斯",   lon:14.27, la:40.85},
+    {n:"拉蒂纳",     lon:12.90, la:41.47},
+    {n:"福尔米亚",   lon:13.61, la:41.26},
+    {n:"卡塔尼亚",   lon:15.09, la:37.50},
+    {n:"墨西拿",     lon:15.55, la:38.19},
+    {n:"拉古萨",     lon:14.72, la:36.93},
+    {n:"雷焦卡拉布里亚", lon:15.65, la:38.11},
+    {n:"加贝斯",     lon:10.10, la:33.88},
+    {n:"迈德宁",     lon:10.50, la:33.35},
+    {n:"科莫蒂尼",   lon:25.40, la:41.12},
+    {n:"亚历山德鲁波利斯", lon:25.87, la:40.85},
+    {n:"约阿尼纳",   lon:20.85, la:39.67},
+    {n:"普雷韦扎",   lon:20.75, la:38.96},
+    {n:"帕尔加",     lon:20.40, la:39.28},
+    {n:"萨兰达",     lon:20.00, la:39.88},
+    {n:"帕特雷",     lon:21.73, la:38.25},
+    {n:"阿尔戈斯托利", lon:20.49, la:38.17},
+    {n:"伊兹密尔",   lon:27.14, la:38.42},
+    {n:"布尔萨",     lon:29.06, la:40.19}
+  ];
+
+  /* ══ 投影 ═════════════════════════════════════════════════════════ */
+  const LON0=8.0, LON1=28.5, LAT0=30.0, LAT1=43.0;
+  const COS = Math.cos(36.5*Math.PI/180), K = 60;
+  const W = Math.round((LON1-LON0)*COS*K), H = Math.round((LAT1-LAT0)*K);
+  const px = lon => (lon-LON0)*COS*K;
+  const py = la  => (LAT1-la)*K;
+  const P  = o   => [px(o.lon), py(o.la)];
+
+  /* ══ 海岸线（海图级概化） ═════════════════════════════════════════ */
+  const COAST = [
+    [[10.3,45],[10.3,43.0],[10.5,42.4],[11.2,42.4],[11.8,42.1],[12.2,41.8],[12.0,41.4],[12.6,41.45],[13.1,41.2],[13.6,41.2],[14.0,40.8],[14.3,40.85],[14.5,40.6],[14.9,40.65],[15.3,40.0],[15.6,40.05],[15.9,39.6],[16.1,39.3],[15.9,38.9],[15.6,38.2],[16.1,37.9],[16.6,38.1],[17.2,38.9],[17.1,39.3],[16.5,39.6],[16.9,40.0],[17.2,40.4],[17.9,40.4],[18.5,40.15],[18.4,40.5],[18.0,40.7],[17.3,40.9],[16.5,41.2],[16.0,41.4],[15.9,41.6],[16.2,41.9],[15.4,42.0],[14.8,42.2],[14.0,42.5],[13.6,43.0],[13.5,43.6],[12.6,44.1],[12.4,45]],
+    [[12.43,37.80],[13.1,38.05],[13.35,38.22],[14.0,38.05],[14.7,38.03],[15.24,38.30],[15.65,38.26],[15.10,37.50],[15.30,37.10],[15.10,36.68],[14.50,36.78],[13.90,37.10],[12.90,37.57]],
+    [[8.2,41.1],[9.5,41.2],[9.8,40.9],[9.7,40.5],[9.6,39.5],[9.5,39.1],[9.0,39.2],[8.4,39.1],[8.4,40.0],[8.2,40.6]],
+    [[8.6,41.4],[9.5,41.4],[9.5,42.7],[9.3,43.1],[8.7,42.6]],
+    [[14.35,35.83],[14.57,35.86],[14.57,35.79],[14.34,35.79]],
+    [[14.18,36.02],[14.34,36.07],[14.36,36.02],[14.19,36.00]],
+    [[19.35,39.78],[20.0,39.7],[20.25,39.35],[20.55,39.2],[20.75,38.95],[21.15,38.4],[21.4,38.3],[22.0,38.35],[22.6,38.4],[23.0,38.0],[23.4,38.05],[23.7,38.15],[24.05,38.3],[23.9,38.6],[23.35,39.0],[23.1,39.2],[22.9,39.6],[22.6,40.0],[22.55,40.4],[22.9,40.6],[23.4,40.5],[23.9,40.5],[24.4,40.9],[25.0,40.85],[25.9,40.85],[26.1,40.6],[26.3,40.7],[26.2,41.1],[25.5,41.3],[24.5,41.5],[23.5,41.4],[22.9,41.3],[22.0,41.2],[21.0,40.9],[20.7,40.5],[20.4,40.1],[19.9,40.2]],
+    [[22.95,37.93],[23.15,37.55],[23.05,37.35],[23.00,36.85],[23.19,36.43],[22.90,36.75],[22.85,36.95],[22.60,36.85],[22.48,36.39],[22.35,36.75],[22.15,36.95],[21.95,36.72],[21.68,36.85],[21.58,37.20],[21.30,37.65],[21.15,38.05],[21.70,38.18],[22.30,38.20],[22.75,38.10]],
+    [[23.55,35.25],[24.0,35.55],[24.7,35.45],[25.2,35.40],[25.75,35.35],[26.30,35.30],[26.30,35.18],[25.80,34.98],[25.10,34.95],[24.75,35.05],[24.10,35.15]],
+    [[19.85,39.85],[20.15,39.70],[19.95,39.40],[19.65,39.50],[19.65,39.75]],
+    [[20.60,38.85],[20.75,38.75],[20.60,38.58],[20.54,38.75]],
+    [[20.35,38.35],[20.60,38.32],[20.80,38.20],[20.58,38.05],[20.38,38.10],[20.28,38.25]],
+    [[20.62,38.48],[20.76,38.42],[20.72,38.33],[20.60,38.38]],
+    [[20.60,37.85],[20.90,37.80],[20.90,37.70],[20.65,37.72]],
+    [[23.05,38.10],[23.6,38.4],[24.2,38.8],[24.6,38.95],[23.9,38.6],[23.35,38.25]],
+    [[27.72,36.45],[28.25,36.42],[28.24,36.20],[27.85,36.15]],
+    [[28.5,40.6],[27.0,40.35],[26.6,40.10],[26.20,39.95],[26.40,39.60],[26.90,39.50],[26.70,39.30],[26.90,38.90],[26.85,38.55],[27.10,38.42],[26.90,38.35],[26.60,38.30],[26.30,38.35],[26.50,38.15],[27.20,38.10],[27.10,37.90],[27.30,37.70],[27.20,37.50],[27.60,37.20],[27.30,37.05],[27.60,36.80],[28.10,36.65],[28.5,36.75]],
+    [[8.0,36.5],[9.0,37.2],[10.2,37.2],[10.6,36.8],[10.5,36.4],[10.8,35.9],[11.0,35.6],[10.8,34.6],[10.1,34.3],[10.0,33.9],[10.6,33.6],[11.0,33.5],[11.5,33.2],[12.0,32.9],[13.2,32.9],[14.2,32.5],[15.2,32.4],[15.3,31.5],[16.5,31.2],[18.0,30.4],[19.0,30.3],[20.0,30.9],[20.1,31.7],[20.7,32.1],[21.7,32.9],[23.1,32.6],[24.0,32.2],[25.0,31.6],[26.0,31.4],[27.0,31.2],[28.5,31.0],[28.5,29.0],[8.0,29.0]]
+  ];
+  const COAST_D = COAST.map(poly =>
+    poly.map((p,i) => (i?"L":"M") + px(p[0]).toFixed(1) + " " + py(p[1]).toFixed(1)).join(" ") + " Z");
+
+  /* ══ 插图 · 矢量线稿 ══════════════════════════════════════════════ */
+  const SEA = '<g class="sea"><path d="M16 100C31 95 45 105 60 100S89 95 104 100"/>'
+            + '<path class="b" d="M24 110C36 106 47 114 60 110S84 106 96 110"/></g>';
+
+  function wedges(x0,y0,rows,cols){
+    let s = "";
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+      const x = x0 + c*9, y = y0 + r*11;
+      s += `<path class="fl" d="M${x} ${y}l4.5 2-4.5 2z"/><path class="ln thin" d="M${x+4.5} ${y+2}h2.6"/>`;
+    }
+    return s;
+  }
+
+  const ILLUS = [
+    /* 01 赫梯楔形文字泥板 */
+    `<path class="ln" d="M27 26c0-3 2-5 5-5h56c3 0 5 2 5 5v58c0 3-2 5-5 5H32c-3 0-5-2-5-5z"/>
+     <path class="ln thin" d="M33 30h54"/>${wedges(36,38,4,6)}`,
+    /* 02 双耳酒罐 */
+    `<path class="ln" d="M50 24h20v6c11 7 17 20 17 32 0 15-12 26-27 26S33 77 33 62c0-12 6-25 17-32z"/>
+     <path class="ln" d="M50 30c-9 1-14 7-13 15"/><path class="ln" d="M70 30c9 1 14 7 13 15"/>
+     <path class="ln" d="M53 88v7h14v-7"/><path class="ln thin" d="M42 58h36"/>${SEA}`,
+    /* 03 枣莲 · 博物图谱 */
+    `<path class="ln" d="M60 96c-1-14 3-27 1-40-1-8 2-15 7-21"/>
+     <path class="ln" d="M59 78c-9-3-14-10-14-18 8 1 14 7 14 18z"/>
+     <path class="ln" d="M61 64c9-3 14-10 14-18-8 1-14 7-14 18z"/>
+     <path class="ln" d="M59 50c-8-3-12-9-12-16 7 1 12 6 12 16z"/>
+     <circle class="ln" cx="69" cy="32" r="5"/><circle class="ln" cx="79" cy="41" r="4"/>
+     <path class="ln thin" d="M69 37v4M79 45v3"/><path class="ln thin" d="M84 30h8M88 26v8"/>${SEA}`,
+    /* 04 削尖的橄榄木桩 */
+    `<path class="ln" d="M50 20h20l-4 50-6 26-6-26z"/>
+     <path class="ln thin" d="M56 24c2 16 1 32 2 46M64 24c-2 16-1 32-2 46"/>
+     <path class="ln thin" d="M55 74l10 6M55 82l9 5M57 88l6 4"/>${SEA}`,
+    /* 05 风袋 —— 虚线，因为它永远不会被找到 */
+    `<path class="ln dash" d="M60 27c-16 8-28 23-28 40 0 16 12 27 28 27s28-11 28-27c0-17-12-32-28-40z"/>
+     <path class="ln dash" d="M51 29c2-6 15-6 18 0"/>
+     <path class="ln thin dash" d="M69 28c9 3 12 11 8 18"/>
+     <path class="ln thin dash" d="M45 52c6 8 24 8 30 0"/>${SEA}`,
+    /* 06 空海图残片 —— 全套里唯一什么都没有的一张 */
+    `<path class="ln thin" d="M24 22h66l-4 7 4 7-4 7 4 8-4 7 4 8-4 7 4 8-3 7H24z"/>
+     <path class="ln thin" d="M28 84c6-5 10-11 11-18M28 76c9-5 14-13 15-22M28 68c12-6 18-16 19-27"/>
+     <path class="ln thin" d="M62 80h18M62 77v6M80 77v6"/>
+     <path class="ln thin" d="M30 30h10M30 27v6M40 27v6"/>${SEA}`,
+    /* 07 药碗与魔杖 */
+    `<path class="ln thin" d="M24 30l72 52"/><circle class="fl" cx="26" cy="31" r="3.4"/>
+     <path class="ln" d="M32 54c0 14 12 24 28 24s28-10 28-24z"/>
+     <path class="ln" d="M32 54c-6 3-6 11 0 14M88 54c6 3 6 11 0 14"/>
+     <path class="ln" d="M55 78v10l-6 5h22l-6-5V78"/>${SEA}`,
+    /* 08 三河交汇与祭坑 */
+    `<path class="ln" d="M18 22c14 14 24 26 36 36"/><path class="ln" d="M60 18c-3 18-3 32 0 40"/>
+     <path class="ln" d="M102 24c-13 14-24 24-36 34"/>
+     <path class="ln" d="M56 62c2 12 0 22-3 32"/>
+     <path class="ln" d="M48 56h20v14H48z"/>
+     <path class="ln thin" d="M51 59l14 8M51 67l14-8"/>${SEA}`,
+    /* 09 海图的涡流记号（不是漩涡本身） */
+    `<path class="ln thin dash" d="M22 20h76v66H22z"/>
+     <path class="ln" d="M60 58c-4 0-7-3-7-7s4-8 9-8 11 5 11 12-7 14-15 14-19-8-19-19 10-21 23-21"/>
+     <path class="ln thin" d="M62 37l-6-4 1 7M34 62l-6 3 7 3"/>
+     <path class="ln thin" d="M26 78h12M26 75v6M38 75v6"/>${SEA}`,
+    /* 10 三腿人首徽 Trinacria */
+    `<circle class="ln" cx="60" cy="55" r="11"/>
+     <circle class="fl" cx="56" cy="53" r="1.6"/><circle class="fl" cx="64" cy="53" r="1.6"/>
+     <g class="ln"><path d="M60 44V24l14-7"/></g>
+     <g class="ln" transform="rotate(120 60 55)"><path d="M60 44V24l14-7"/></g>
+     <g class="ln" transform="rotate(240 60 55)"><path d="M60 44V24l14-7"/></g>${SEA}`,
+    /* 11 封住的洞口 */
+    `<path class="ln" d="M26 92V62c0-19 15-34 34-34s34 15 34 34v30"/>
+     <path class="ln" d="M28 62h64M28 74h64M28 86h64"/>
+     <path class="ln thin" d="M34 56h52"/>
+     <path class="ln thin" d="M30 62l60 24M90 62L30 86"/>${SEA}`,
+    /* 12 盲诗人的竖琴 */
+    `<path class="ln" d="M40 82c0 10 40 10 40 0 0-10-8-15-20-15s-20 5-20 15z"/>
+     <path class="ln" d="M45 70c-6-18-5-32 0-44M75 70c6-18 5-32 0-44"/>
+     <path class="ln" d="M43 26h34"/>
+     <path class="ln thin" d="M50 27v42M57 27v41M64 27v41M71 27v42"/>${SEA}`,
+    /* 13 卧着的老狗阿尔戈斯 */
+    `<path class="ln" d="M24 82c0-12 10-20 24-20 10 0 18 3 26 1 6-2 10-6 14-11"/>
+     <path class="ln" d="M88 52c6-2 10 1 10 6s-5 8-10 7c-4-1-6-4-6-7"/>
+     <path class="ln" d="M87 48c-2-6 2-10 6-8 3 1 3 5 1 8"/>
+     <circle class="fl" cx="92" cy="56" r="1.7"/>
+     <path class="ln" d="M32 82c8-5 20-6 30-3M46 82c6-4 14-5 21-3"/>
+     <path class="ln" d="M24 82c-6-1-9-6-6-11"/>${SEA}`
+  ];
+
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (t,a) => { const n = document.createElementNS(NS,t); for(const k in a) n.setAttribute(k,a[k]); return n; };
+  const svg = document.getElementById("map");
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+  /* 经纬网 */
+  const gG = el("g", {class:"grat"});
+  for(let lo=Math.ceil(LON0/2)*2; lo<=LON1; lo+=2) gG.appendChild(el("line",{x1:px(lo),y1:0,x2:px(lo),y2:H}));
+  for(let la=Math.ceil(LAT0/2)*2; la<=LAT1; la+=2) gG.appendChild(el("line",{x1:0,y1:py(la),x2:W,y2:py(la)}));
+  svg.appendChild(gG);
+
+  const gLab = el("g",{class:"gratlabel"});
+  for(let lo=Math.ceil(LON0/4)*4; lo<=LON1-1; lo+=4){
+    const t=el("text",{x:px(lo)+4,y:H-7}); t.textContent=lo+"°E"; gLab.appendChild(t); }
+  for(let la=Math.ceil(LAT0/4)*4; la<=LAT1-1; la+=4){
+    const t=el("text",{x:5,y:py(la)-5}); t.textContent=la+"°N"; gLab.appendChild(t); }
+  svg.appendChild(gLab);
+
+  /* 陆地 */
+  const gLand = el("g",{});
+  COAST_D.forEach(d => gLand.appendChild(el("path",{class:"land", d})));
+  svg.appendChild(gLand);
+
+  /* 现代城市（仅 major） */
+  const gCity = el("g",{});
+  CITY.filter(c=>c.major).forEach(c => {
+    const g = el("g",{class:"city"});
+    g.appendChild(el("rect",{x:px(c.lon)-2.4, y:py(c.la)-2.4, width:4.8, height:4.8}));
+    const t = el("text",{x:px(c.lon)+7, y:py(c.la)+3.6}); t.textContent=c.n;
+    g.appendChild(t); gCity.appendChild(g);
+  });
+  svg.appendChild(gCity);
+
+  /* 比例尺 */
+  const sb = el("g",{class:"scalebar", transform:`translate(${W-160},${H-30})`});
+  const len = (200/111)*K;
+  sb.appendChild(el("path",{d:`M0 6 L0 0 L${len} 0 L${len} 6`}));
+  const st = el("text",{class:"scaletext", x:len+7, y:4}); st.textContent="200 km";
+  sb.appendChild(st); svg.appendChild(sb);
+
+  /* 航线 */
+  const ROUTE = [
+    {i:0,k:"real"},{i:1,k:"real"},{m:true,k:"real"},
+    {i:2,k:"myth"},{i:3,k:"myth"},{i:4,k:"myth"},{i:5,k:"myth"},
+    {i:6,k:"myth"},{i:7,k:"myth"},{i:6,k:"myth"},
+    {i:8,k:"myth"},{i:9,k:"myth"},{i:10,k:"myth"},
+    {i:11,k:"gate"},{i:12,k:"real"}
+  ];
+  const pts = ROUTE.map(r => r.m ? P(MALEA) : P(S[r.i]));
+  const gRoute = el("g",{});
+  for(let i=0;i<pts.length-1;i++)
+    gRoute.appendChild(el("path",{class:"seg "+ROUTE[i+1].k,
+      d:`M${pts[i][0].toFixed(1)} ${pts[i][1].toFixed(1)} L${pts[i+1][0].toFixed(1)} ${pts[i+1][1].toFixed(1)}`}));
+  svg.appendChild(gRoute);
+
+  /* 马莱亚角 —— 全图唯一纯黑线 */
+  const mp = P(MALEA), gM = el("g",{});
+  gM.appendChild(el("line",{class:"malea-line", x1:mp[0]-4, y1:mp[1]-50, x2:mp[0]+36, y2:mp[1]+42}));
+  gM.appendChild(el("circle",{cx:mp[0], cy:mp[1], r:3.4, fill:"var(--ink)"}));
+  const mt1=el("text",{class:"malea-tag", x:mp[0]+8, y:mp[1]-56}); mt1.textContent="CAPE MALEA";
+  const mt2=el("text",{class:"malea-tag", x:mp[0]+8, y:mp[1]-43, "font-size":"9.5"}); mt2.textContent="马莱亚角 · 卷九";
+  gM.appendChild(mt1); gM.appendChild(mt2);
+  const z1=el("text",{class:"zone-tag", x:mp[0]+54, y:mp[1]+18}); z1.textContent="可考地理";
+  const z2=el("text",{class:"zone-tag", x:mp[0]-120, y:mp[1]+54}); z2.textContent="神话地理";
+  gM.appendChild(z1); gM.appendChild(z2); svg.appendChild(gM);
+
+  /* 航迹动画层 */
+  const trail = el("path",{class:"trail",
+    d: pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ")});
+  svg.appendChild(trail);
+  const TL = trail.getTotalLength();
+  trail.style.strokeDasharray = TL; trail.style.strokeDashoffset = TL;
+
+  const ship = el("g",{opacity:0});
+  ship.appendChild(el("circle",{r:8, fill:"var(--accent)", opacity:.22}));
+  ship.appendChild(el("circle",{r:3.6, fill:"var(--accent)", stroke:"var(--sea)", "stroke-width":1.2}));
+  svg.appendChild(ship);
+
+  const arriveAt = {0:0}; let acc = 0;
+  for(let i=1;i<pts.length;i++){
+    acc += Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]);
+    const r = ROUTE[i];
+    if(!r.m && arriveAt[r.i]===undefined) arriveAt[r.i]=acc;
+  }
+
+  /* 站点 */
+  const LOFF = {e:[14,4,"start"], w:[-14,4,"end"], n:[0,-15,"middle"], s:[0,19,"middle"],
+                ne:[12,-9,"start"], nw:[-12,-9,"end"], se:[12,16,"start"], sw:[-12,16,"end"]};
+  const gNodes = el("g",{});
+  const nodes = S.map((s,i) => {
+    const [x,y] = P(s);
+    const g = el("g",{class:`node ${s.ev} acc-${s.acc}`, transform:`translate(${x.toFixed(1)},${y.toFixed(1)})`,
+                      tabindex:"0", role:"button", "aria-label":`第${i+1}站 ${s.n}`});
+    g.appendChild(el("circle",{class:"selring", r:15}));
+    g.appendChild(el("circle",{class:"halo", r:10.5}));
+    g.appendChild(el("circle",{class:"ring", r:10}));
+    g.appendChild(el("circle",{class:"core", r:6.6}));
+    const num = el("text",{class:"num", y:.5}); num.textContent = i+1; g.appendChild(num);
+    if(s.dispute){ const d=el("text",{class:"dispute", x:11, y:-8}); d.textContent="†"; g.appendChild(d); }
+    const [dx,dy,an] = LOFF[s.lp];
+    const lbl = el("text",{class:"lbl", x:dx, y:dy, "text-anchor":an}); lbl.textContent=s.n; g.appendChild(lbl);
+    g.addEventListener("click", ()=>select(i));
+    g.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); select(i);} });
+    gNodes.appendChild(g); return g;
+  });
+  svg.appendChild(gNodes);
+
+  /* ══ 全览格 ═══════════════════════════════════════════════════════ */
+  const illusMarkup = i => `<svg class="illus ${S[i].ev}" viewBox="0 0 120 120" aria-hidden="true">${ILLUS[i]}</svg>`;
+  const grid = document.getElementById("grid");
+  const tiles = S.map((s,i) => {
+    const b = document.createElement("button");
+    b.className = "tile";
+    b.innerHTML = `${illusMarkup(i)}<span class="idx">${String(i+1).padStart(2,"0")}</span><span class="nm">${s.n}</span>`;
+    b.addEventListener("click", ()=>select(i));
+    grid.appendChild(b); return b;
+  });
+
+  /* ══ 定位小图 —— 复用 COAST 与投影，只改 viewBox ══════════════════ */
+  function locator(i){
+    const s = S[i], cx = px(s.lon), cy = py(s.la), half = (300/111)*K/2;
+    const vb = `${(cx-half).toFixed(1)} ${(cy-half).toFixed(1)} ${(half*2).toFixed(1)} ${(half*2).toFixed(1)}`;
+    const lands = COAST_D.map(d=>`<path class="land" d="${d}"/>`).join("");
+    let grats = "";
+    for(let lo=Math.ceil(LON0); lo<=LON1; lo++) grats += `<line x1="${px(lo)}" y1="0" x2="${px(lo)}" y2="${H}"/>`;
+    for(let la=Math.ceil(LAT0); la<=LAT1; la++) grats += `<line x1="0" y1="${py(la)}" x2="${W}" y2="${py(la)}"/>`;
+    const near = CITY.filter(c => Math.abs(px(c.lon)-cx) < half-14 && Math.abs(py(c.la)-cy) < half-10)
+      .map(c => `<g class="city"><rect x="${(px(c.lon)-2.6).toFixed(1)}" y="${(py(c.la)-2.6).toFixed(1)}" width="5.2" height="5.2"/>`
+               + `<text x="${(px(c.lon)+8).toFixed(1)}" y="${(py(c.la)+4).toFixed(1)}" style="font-size:11px">${c.n}</text></g>`).join("");
+    const sc = (100/111)*K;
+    return `<div class="lbox"><svg viewBox="${vb}" role="img" aria-label="${s.n}的现代位置">
+      <g class="grat" style="stroke-width:.6">${grats}</g>${lands}${near}
+      <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="12" fill="none"
+              stroke="var(--accent)" stroke-width="1.6"/>
+      <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4.6" fill="var(--ev-${s.ev})"
+              stroke="var(--sea)" stroke-width="1.2"/>
+      <g class="scalebar" transform="translate(${(cx+half-sc-16).toFixed(1)},${(cy+half-16).toFixed(1)})">
+        <path d="M0 6 L0 0 L${sc.toFixed(1)} 0 L${sc.toFixed(1)} 6"/>
+        <text class="scaletext" x="${(sc/2).toFixed(1)}" y="-4" text-anchor="middle" style="font-size:10px">100 km</text>
+      </g></svg></div>
+      <div class="addr"><b>今天的地址</b><span>${s.addr}</span></div>`;
+  }
+
+  /* ══ 卡片 ═════════════════════════════════════════════════════════ */
+  const EVN = {hard:"有考古遗存", conj:"学术推测", myth:"后世指认"};
+  const ACN = {site:"有遗址可走", landmark:"只有地貌与命名", none:"无指认点"};
+  const card = document.getElementById("card");
+  let cur = 0;
+
+  function render(i){
+    const s = S[i];
+    card.innerHTML = `
+      <div class="card-illus">${illusMarkup(i)}</div>
+      <div class="card-head">
+        <div class="card-meta">
+          <span>第 ${String(i+1).padStart(2,"0")} 站</span><span>·</span><span>${s.book}</span>
+          <span class="badge ${s.ev}">${EVN[s.ev]}</span>
+          <span>${ACN[s.acc]}</span>
+          ${s.dispute ? '<span class="badge dispute">† 学界仍在争论</span>' : ""}
+        </div>
+        <h2>${s.n}</h2>
+        <div class="lat">${s.lat}</div>
+        <p class="oneline">${s.one}</p>
+      </div>
+      <div class="locator">${locator(i)}</div>
+      <div class="card-body">
+        <div class="fld"><h3>荷马怎么写</h3><p>${s.homer}</p>
+          ${s.q ? `<div class="quote">「${s.q.t}」<cite>${s.q.c}</cite></div>` : ""}</div>
+        <div class="fld"><h3>学者说它在哪</h3><p>${s.schol}</p></div>
+        <div class="fld"><h3>地下挖出了什么</h3><p>${s.arch}</p>
+          ${s.flag ? `<div class="flag">${s.flag}</div>` : ""}</div>
+        <div class="fld limit"><h3>证据的边界</h3>
+          <p class="yes">${s.yes}</p>
+          <p class="no"><b>但是——</b>${s.no}</p></div>
+        <div class="fld"><h3>今天能看到什么</h3><p>${s.today}</p></div>
+      </div>
+      <div class="nav"><button id="prev">← 上一站</button><button id="next">下一站 →</button></div>`;
+    card.querySelector("#prev").addEventListener("click", ()=>select((i+S.length-1)%S.length));
+    card.querySelector("#next").addEventListener("click", ()=>select((i+1)%S.length));
+  }
+
+  function renderVoid(){
+    card.innerHTML = `<div class="void">
+      <div class="k">Stations with proof of Odysseus</div>
+      <h2>一站都没有。</h2>
+      <p>希萨利克有城墙，马罗尼亚有酒，阿刻戎河边有一栋房子，伊萨基有迈锡尼时期的台阶。</p>
+      <p class="last">没有一样东西上面写着他的名字。</p>
+    </div>`;
+  }
+
+  function select(i){
+    if(proofOnly){ proofOnly=false; proofBtn.classList.remove("on"); applyFilter(); }
+    cur = i; render(i);
+    nodes.forEach((g,k)=>g.classList.toggle("sel", k===i));
+    tiles.forEach((b,k)=>b.classList.toggle("sel", k===i));
+    const n = nodes[i]; n.parentNode.appendChild(n);
+  }
+
+  /* ══ 筛选 ═════════════════════════════════════════════════════════ */
+  const evOn = {hard:true, conj:true, myth:true};
+  let proofOnly = false;
+
+  function applyFilter(){
+    S.forEach((s,i) => {
+      const hid = proofOnly || !evOn[s.ev];
+      nodes[i].classList.toggle("dim", hid);
+      tiles[i].classList.toggle("dim", hid);
+    });
+  }
+  document.querySelectorAll(".chip").forEach(c => {
+    c.addEventListener("click", () => {
+      if(proofOnly){ proofOnly=false; proofBtn.classList.remove("on"); render(cur); }
+      const k = c.dataset.ev; evOn[k] = !evOn[k];
+      c.setAttribute("aria-pressed", String(evOn[k])); applyFilter();
+    });
+  });
+
+  const proofBtn = document.getElementById("proof");
+  proofBtn.addEventListener("click", () => {
+    proofOnly = !proofOnly;
+    proofBtn.classList.toggle("on", proofOnly);
+    if(proofOnly){
+      Object.keys(evOn).forEach(k=>evOn[k]=true);
+      document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","true"));
+      nodes.forEach(g=>g.classList.remove("sel"));
+      tiles.forEach(b=>b.classList.remove("sel"));
+      renderVoid();
+    } else render(cur);
+    applyFilter();
+  });
+
+  document.getElementById("reset").addEventListener("click", () => {
+    Object.keys(evOn).forEach(k=>evOn[k]=true);
+    document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","true"));
+    proofOnly = false; proofBtn.classList.remove("on");
+    applyFilter(); select(cur);
+  });
+
+  /* ══ 航线播放 ═════════════════════════════════════════════════════ */
+  const playBtn = document.getElementById("play");
+  let raf=null, playing=false;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function stop(){
+    playing=false; if(raf) cancelAnimationFrame(raf); raf=null;
+    playBtn.textContent="▶ 播放航线";
+    trail.style.strokeDashoffset = TL; ship.setAttribute("opacity",0);
+    nodes.forEach(g=>g.classList.remove("unlit"));
+  }
+  playBtn.addEventListener("click", () => {
+    if(playing){ stop(); return; }
+    if(reduce){ select(S.length-1); return; }
+    if(proofOnly){ proofOnly=false; proofBtn.classList.remove("on"); applyFilter(); }
+    playing=true; playBtn.textContent="■ 停止";
+    nodes.forEach(g=>g.classList.add("unlit"));
+    ship.setAttribute("opacity",1);
+    const DUR=13000, t0=performance.now(), lit=new Set();
+    (function frame(now){
+      if(!playing) return;
+      const p = Math.min((now-t0)/DUR, 1), d = p*TL;
+      trail.style.strokeDashoffset = TL-d;
+      const pt = trail.getPointAtLength(d);
+      ship.setAttribute("transform",`translate(${pt.x},${pt.y})`);
+      for(const k in arriveAt){
+        const i=+k;
+        if(!lit.has(i) && d >= arriveAt[i]-1){ lit.add(i); nodes[i].classList.remove("unlit"); select(i); }
+      }
+      if(p<1) raf=requestAnimationFrame(frame);
+      else { playing=false; playBtn.textContent="▶ 播放航线"; ship.setAttribute("opacity",0); }
+    })(t0);
+  });
+
+  document.addEventListener("keydown", e => {
+    if(e.target.tagName === "BUTTON") return;
+    if(e.key === "ArrowRight") select((cur+1)%S.length);
+    if(e.key === "ArrowLeft")  select((cur+S.length-1)%S.length);
+  });
+
+  select(0);
+})();
+</script>
+</body>
+</html>
