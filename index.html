@@ -14,6 +14,10 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="奥德赛证据地图 · 十三站，零证据">
 <meta property="og:description" content="十三站，十二站今天能去，四站有考古遗存，零站能证明奥德修斯到过。把史诗记载、学术推测、考古证据分成三层看。">
+<meta property="og:image" content="https://jdreamflying.github.io/odyssey-map/cover.png">
+<meta property="og:image:width" content="990">
+<meta property="og:image:height" content="523">
+<meta property="og:image:alt" content="地中海海图，标出《奥德赛》十三个停靠站，圆点颜色代表证据等级">
 <meta name="twitter:card" content="summary_large_image">
 
 <style>
@@ -178,8 +182,7 @@
     background: var(--sea); border: 1px solid var(--rule);
     border-radius: 2px; overflow: hidden; position: relative;
   }
-  svg.map{ display:block; width:100%; height:auto; cursor: zoom-in; touch-action: manipulation; }
-  svg.map.zoomed{ cursor: zoom-out; }
+  svg.map{ display:block; width:100%; height:auto; cursor: pointer; touch-action: manipulation; }
 
   /* 只动 viewBox，所以这些线的粗细要固定在屏幕上 */
   .land, .grat, .seg, .trail, .malea-line, .scalebar path{ vector-effect: non-scaling-stroke; }
@@ -281,10 +284,23 @@
   .illus.myth .sea path{ stroke: var(--ev-myth); }
 
   /* ══ card ═══════════════════════════════════════════════════════════ */
+  /* 卡片自己滚：标题钉在上、翻页钉在下，中间那段单独滑 */
   .card{
     background: var(--surface); border: 1px solid var(--rule);
     border-radius: 2px; box-shadow: var(--shadow); position: sticky; top: 22px;
+    max-height: calc(100vh - 44px);
+    display: flex; flex-direction: column; min-height: 0;
   }
+  .card > .card-head, .card > .nav{ flex: none; }
+  .card > .card-body, .card > .void{
+    flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+    scrollbar-width: thin; scrollbar-color: var(--ink-3) transparent;
+  }
+  .card > .card-body::-webkit-scrollbar{ width: 9px; }
+  .card > .card-body::-webkit-scrollbar-thumb{
+    background: var(--surface-2); border: 3px solid var(--surface); border-radius: 100px;
+  }
+  .card > .card-body:hover::-webkit-scrollbar-thumb{ background: var(--ink-3); }
   .title-row{ display:flex; align-items:flex-start; justify-content:space-between; gap: 14px; margin-top: 11px; }
   .title-row .ti{ min-width: 0; }
   .card-illus{ flex: none; }
@@ -422,7 +438,9 @@
   @media (max-width: 940px){
     .stage{ grid-template-columns: minmax(0,1fr); gap: 24px; }
     .wrap{ padding: 0 16px 56px; }
-    .card{ position: static; }
+    /* 单栏时卡片跟着页面走，不再单独滚 */
+    .card{ position: static; max-height: none; display: block; }
+    .card > .card-body, .card > .void{ overflow-y: visible; }
   }
   @media (max-width: 620px){
     body{ font-size: 15px; }
@@ -493,7 +511,7 @@
       <div class="mapbox">
         <svg class="map" id="map" role="img"
           aria-label="地中海东部与中部海图，标出《奥德赛》十三个停靠站及其证据等级"></svg>
-        <div class="maphint">双击地图 · 放大到当前选中的一站</div>
+        <div class="maphint">单击选站 · 双击放大</div>
         <button class="mapout" id="zoomout">↩ 回到全图</button>
       </div>
 
@@ -1122,6 +1140,26 @@
   svg.addEventListener("dblclick", e => {
     e.preventDefault();
     if(zoomI === null) zoomTo(cur); else zoomOut();
+  });
+
+  /* 单击地图任意位置 —— 选中离点击处最近的一站。
+     十三站里最近的一对只隔 23 个单位，把每个点的判定圈统一放大会互相抢，
+     所以改成按距离切分：图上每一点归属于离它最近的那一站，永远不会选错。 */
+  function svgPoint(e){
+    const r = svg.getBoundingClientRect();
+    return [ view[0] + (e.clientX - r.left) / r.width  * view[2],
+             view[1] + (e.clientY - r.top ) / r.height * view[3] ];
+  }
+  svg.addEventListener("click", e => {
+    if(e.target.closest && e.target.closest(".node")) return;   // 点在站点上，交给它自己的处理
+    const [x, y] = svgPoint(e);
+    let best = -1, bd = Infinity;
+    S.forEach((s, i) => {
+      if(!proofOnly && !evOn[s.ev]) return;                     // 被筛掉的不参与
+      const d = Math.hypot(NXY[i][0] - x, NXY[i][1] - y);
+      if(d < bd){ bd = d; best = i; }
+    });
+    if(best >= 0 && bd < view[2] * .085 && (best !== cur || proofOnly)) select(best);
   });
   document.getElementById("zoomout").addEventListener("click", zoomOut);
   paint(view);   // 初始化比例尺与各图层的缩放系数
