@@ -9,8 +9,7 @@
 <meta name="theme-color" content="#D9D5C7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#191712" media="(prefers-color-scheme: dark)">
 
-<!-- 分享卡片。发到码云拿到网址后，把下面这一行的 URL 换成你自己的，微信里转发才会带标题。 -->
-<meta property="og:url" content="">
+<meta property="og:url" content="https://jdreamflying.github.io/odyssey-map/">
 <meta property="og:type" content="article">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:title" content="奥德赛证据地图 · 十三站，零证据">
@@ -109,31 +108,33 @@
   .wrap{ max-width: 1280px; margin: 0 auto; padding: 0 24px 72px; }
 
   /* ══ masthead ═══════════════════════════════════════════════════════ */
-  .masthead{ padding: 52px 0 30px; border-bottom: 1px solid var(--rule); }
+  .masthead{ padding: 32px 0 20px; border-bottom: 1px solid var(--rule); }
   .eyebrow{
-    font-family: var(--mono); font-size: 11px; letter-spacing: .16em;
-    text-transform: uppercase; color: var(--ink-3); margin-bottom: 18px;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px;
   }
-  .masthead h1{ font-size: clamp(32px, 5.4vw, 58px); line-height: 1.1; letter-spacing: -.01em; }
+  .masthead h1{ font-size: clamp(27px, 4.2vw, 44px); line-height: 1.14; letter-spacing: -.01em; }
   .masthead h1 .lat{
     font-family: var(--serif); font-weight: 400; font-style: italic;
     color: var(--ink-2); font-size: .55em; letter-spacing: .01em;
   }
-  .thesis{ margin-top: 22px; max-width: 62ch; font-size: 16.5px; color: var(--ink-2); }
+  .thesis{ margin-top: 14px; max-width: 60ch; font-size: 15px; color: var(--ink-2); }
   .thesis strong{ color: var(--ink); font-weight: 600; }
 
   .ledger{
-    margin-top: 32px; display: grid; gap: 1px; grid-template-columns: repeat(4, 1fr);
-    background: var(--rule); border: 1px solid var(--rule);
+    margin-top: 16px; display: flex; flex-wrap: wrap; gap: 6px 20px;
+    font-size: 13.5px; color: var(--ink-3);
   }
-  .ledger div{ background: var(--bg); padding: 16px 18px; }
-  .ledger .n{
-    font-family: var(--serif); font-weight: 900; font-size: clamp(28px, 4vw, 36px);
-    line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  .ledger span{ display: inline-flex; align-items: baseline; gap: 5px; }
+  .ledger span + span::before{
+    content: "·"; color: var(--rule); margin-right: 15px;
   }
-  .ledger .k{ font-size: 12.5px; color: var(--ink-2); margin-top: 8px; line-height: 1.5; }
-  .ledger div:last-child .n{ color: var(--accent); }
-  .ledger div:last-child .k{ color: var(--ink); }
+  .ledger b{
+    font-family: var(--serif); font-weight: 700; font-size: 19px;
+    font-variant-numeric: tabular-nums; color: var(--ink-2); letter-spacing: -.01em;
+  }
+  .ledger .zero{ color: var(--ink); }
+  .ledger .zero b{ color: var(--accent); }
 
   /* ══ controls ═══════════════════════════════════════════════════════ */
   .controls{
@@ -175,9 +176,29 @@
 
   .mapbox{
     background: var(--sea); border: 1px solid var(--rule);
-    border-radius: 2px; overflow: hidden;
+    border-radius: 2px; overflow: hidden; position: relative;
   }
-  svg.map{ display:block; width:100%; height:auto; }
+  svg.map{ display:block; width:100%; height:auto; cursor: zoom-in; touch-action: manipulation; }
+  svg.map.zoomed{ cursor: zoom-out; }
+
+  /* 只动 viewBox，所以这些线的粗细要固定在屏幕上 */
+  .land, .grat, .seg, .trail, .malea-line, .scalebar path{ vector-effect: non-scaling-stroke; }
+  .city.minor{ display: none; }
+  .map.zoomed .city.minor{ display: inline; }
+  .map.zoomed .gratlabel, .map.zoomed .zone-tag, .map.zoomed .malea-tag{ display: none; }
+
+  .maphint, .mapout{
+    position: absolute; left: 10px; bottom: 9px; font-size: 11.5px;
+    font-family: var(--sans); pointer-events: none;
+  }
+  .maphint{ color: var(--ink-3); background: var(--sea); padding: 2px 8px; border-radius: 100px; }
+  .mapout{
+    display: none; pointer-events: auto; cursor: pointer; font: inherit; font-size: 11.5px;
+    padding: 4px 11px; border-radius: 100px; border: 1px solid var(--accent);
+    background: var(--surface); color: var(--accent);
+  }
+  .map.zoomed ~ .maphint{ display: none; }
+  .map.zoomed ~ .mapout{ display: block; }
   .land{ fill: var(--land); stroke: var(--coast); stroke-width: .9; stroke-linejoin: round; }
   .grat{ stroke: var(--grat); stroke-width: .7; fill:none; }
   .gratlabel{ font-family: var(--mono); font-size: 9.5px; fill: var(--ink-3); opacity:.7; }
@@ -264,12 +285,11 @@
     background: var(--surface); border: 1px solid var(--rule);
     border-radius: 2px; box-shadow: var(--shadow); position: sticky; top: 22px;
   }
-  .card-illus{
-    display:flex; align-items:center; justify-content:center;
-    padding: 18px 0 8px; border-bottom: 1px solid var(--rule-soft); background: var(--surface-2);
-  }
-  .card-illus .illus{ max-width: 116px; }
-  .card-head{ padding: 20px 24px 18px; border-bottom: 1px solid var(--rule-soft); }
+  .title-row{ display:flex; align-items:flex-start; justify-content:space-between; gap: 14px; margin-top: 11px; }
+  .title-row .ti{ min-width: 0; }
+  .card-illus{ flex: none; }
+  .card-illus .illus{ width: 60px; max-width: 60px; opacity: .9; }
+  .card-head{ padding: 18px 22px 16px; border-bottom: 1px solid var(--rule-soft); }
   .card-meta{
     display:flex; align-items:center; gap: 9px; flex-wrap: wrap;
     font-family: var(--mono); font-size: 10.5px; letter-spacing: .12em;
@@ -282,23 +302,28 @@
   .badge.myth{ background: var(--ev-myth-bg); color: var(--ev-myth); }
   .badge.dispute{ background: transparent; color: var(--ink); border: 1px solid var(--rule); }
 
-  .card-head h2{ font-size: 26px; line-height: 1.25; margin-top: 12px; }
+  .card-head h2{ font-size: 25px; line-height: 1.25; }
   .card-head .lat{ font-family: var(--serif); font-style: italic; font-weight: 400;
-                   font-size: 14px; color: var(--ink-3); margin-top: 4px; }
-  .oneline{ margin-top: 14px; font-family: var(--serif); font-size: 17.5px; line-height: 1.62; }
+                   font-size: 13.5px; color: var(--ink-3); margin-top: 3px; }
+  .oneline{ margin-top: 12px; font-family: var(--serif); font-size: 17px; line-height: 1.62; }
 
-  /* 定位小图 */
-  .locator{ padding: 16px 24px 0; }
-  .locator .lbox{ background: var(--sea); border: 1px solid var(--rule); border-radius: 2px; }
-  .locator svg{ display:block; width:100%; height:auto; }
-  .locator .addr{
-    margin-top: 8px; font-size: 12.5px; color: var(--ink-2); line-height: 1.6;
-    display:flex; gap: 8px; align-items: baseline;
+  /* 今天的地址 —— 原来那张定位小图的替代 */
+  .addr{
+    margin-top: 13px; padding-top: 12px; border-top: 1px solid var(--rule-soft);
+    font-size: 12.5px; color: var(--ink-2); line-height: 1.6;
+    display:flex; gap: 8px; align-items: baseline; flex-wrap: wrap;
   }
-  .locator .addr b{ font-family: var(--mono); font-size: 10px; letter-spacing:.12em;
-                    text-transform: uppercase; color: var(--ink-3); flex:none; font-weight:500; }
+  .addr b{ font-family: var(--mono); font-size: 10px; letter-spacing:.12em;
+           text-transform: uppercase; color: var(--ink-3); flex:none; font-weight:500; }
+  .zoombtn{
+    font: inherit; font-size: 11.5px; cursor: pointer; margin-left: auto; flex: none;
+    padding: 3px 10px; border-radius: 100px; border: 1px solid var(--rule);
+    background: transparent; color: var(--ink-3); white-space: nowrap;
+    transition: border-color .15s, color .15s;
+  }
+  .zoombtn:hover{ border-color: var(--accent); color: var(--accent); }
 
-  .card-body{ padding: 4px 24px 22px; }
+  .card-body{ padding: 4px 22px 22px; }
   .fld{ padding: 17px 0; border-bottom: 1px solid var(--rule-soft); }
   .fld:last-child{ border-bottom: 0; padding-bottom: 4px; }
   .fld h3{ font-family: var(--mono); font-size: 10.5px; font-weight: 500; letter-spacing: .14em;
@@ -353,8 +378,26 @@
           font-size: 13px; color: var(--ink-2); line-height: 1.7; }
   .dnote b{ color: var(--ink); font-weight: 600; }
 
-  .legend{ margin-top: 34px; padding-top: 26px; border-top: 1px solid var(--rule);
-           display:grid; gap: 26px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+  /* 图例 —— 默认收起，点开才展开 */
+  .legend{ margin-top: 20px; border-top: 1px solid var(--rule-soft); }
+  .legend > summary{
+    list-style: none; cursor: pointer; padding: 13px 2px; display: flex;
+    align-items: baseline; gap: 10px; flex-wrap: wrap;
+    font-size: 13px; color: var(--ink-2);
+  }
+  .legend > summary::-webkit-details-marker{ display:none; }
+  .legend > summary::before{
+    content: "＋"; font-family: var(--mono); font-size: 12px; color: var(--ink-3);
+    flex: none; transition: transform .2s;
+  }
+  .legend[open] > summary::before{ content: "－"; }
+  .legend > summary:hover{ color: var(--ink); }
+  .legend > summary b{ font-weight: 600; color: var(--ink); }
+  .legend > summary .hint{ font-size: 12.5px; color: var(--ink-3); }
+  .legend .lg-body{
+    display:grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    padding: 6px 0 20px;
+  }
   .legend ul{ margin:0; padding:0; }
   .legend li{ list-style:none; font-size: 13px; color: var(--ink-2); margin-bottom: 10px;
               display:flex; gap: 10px; align-items: flex-start; line-height: 1.62; }
@@ -380,24 +423,28 @@
     .stage{ grid-template-columns: minmax(0,1fr); gap: 24px; }
     .wrap{ padding: 0 16px 56px; }
     .card{ position: static; }
-    .ledger{ grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 620px){
     body{ font-size: 15px; }
-    .masthead{ padding: 34px 0 24px; }
-    /* 地图按宽度缩到底，绝不横向溢出 —— 十三个点必须同框 */
+    .masthead{ padding: 24px 0 18px; }
+    .ledger{ gap: 5px 14px; font-size: 12.5px; }
+    .ledger span + span::before{ margin-right: 9px; }
+    .ledger b{ font-size: 17px; }
+    /* 地图按宽度缩到底，绝不横向溢出 —— 十三个点必须同框。
+       但放大之后点很少，这时候标注要回来。 */
     .mapbox{ overflow: hidden; }
-    svg.map .lbl,
-    svg.map .city text,
+    svg.map:not(.zoomed) .lbl,
+    svg.map:not(.zoomed) .city text,
     svg.map .gratlabel,
-    svg.map .zone-tag{ display: none; }
-    svg.map .malea-tag{ font-size: 13px; }
+    svg.map:not(.zoomed) .zone-tag{ display: none; }
+    svg.map:not(.zoomed) .malea-tag{ font-size: 13px; }
+    .maphint, .mapout{ font-size: 10.5px; left: 7px; bottom: 7px; }
     .node .num{ font-size: 12px; }
     .node .ring{ r: 14; }
     .grid{ grid-template-columns: repeat(3, 1fr); gap: 6px; }
     .tile .nm{ font-size: 10.5px; }
     .illus{ max-width: 62px; }
-    .card-head, .card-body, .locator, .nav{ padding-left: 17px; padding-right: 17px; }
+    .card-head, .card-body, .nav{ padding-left: 17px; padding-right: 17px; }
     .fld.limit{ margin-left: -17px; margin-right: -17px; padding-left: 17px; padding-right: 17px; }
     .card-head h2{ font-size: 23px; }
     .controls{ gap: 8px 6px; }
@@ -421,12 +468,12 @@
       荷马原文怎么写、学者推测它在哪、地下究竟挖出了什么。
       三者经常对不上——而对不上的地方，才是这张地图想讲的。
     </p>
-    <div class="ledger">
-      <div><div class="n">13</div><div class="k">史诗中的停靠站</div></div>
-      <div><div class="n">12</div><div class="k">今天有明确地点可去</div></div>
-      <div><div class="n">4</div><div class="k">地名在史诗之外独立可考</div></div>
-      <div><div class="n">0</div><div class="k">能证明奥德修斯到过</div></div>
-    </div>
+    <p class="ledger">
+      <span><b>13</b> 站</span>
+      <span><b>12</b> 站今天能去</span>
+      <span><b>4</b> 站有考古遗存</span>
+      <span class="zero"><b>0</b> 站能证明他到过</span>
+    </p>
   </header>
 
   <div class="controls">
@@ -443,8 +490,12 @@
 
   <div class="stage">
     <div>
-      <div class="mapbox"><svg class="map" id="map" role="img"
-        aria-label="地中海东部与中部海图，标出《奥德赛》十三个停靠站及其证据等级"></svg></div>
+      <div class="mapbox">
+        <svg class="map" id="map" role="img"
+          aria-label="地中海东部与中部海图，标出《奥德赛》十三个停靠站及其证据等级"></svg>
+        <div class="maphint">双击地图 · 放大到当前选中的一站</div>
+        <button class="mapout" id="zoomout">↩ 回到全图</button>
+      </div>
 
       <section class="gallery">
         <div class="gal-head">
@@ -454,7 +505,9 @@
         <div class="grid" id="grid"></div>
       </section>
 
-      <div class="legend">
+      <details class="legend">
+        <summary><b>怎么读这张图</b><span class="hint">圆心颜色、外圈线型、航线线型各代表什么</span></summary>
+        <div class="lg-body">
         <div>
           <h3>圆心颜色 · 证据等级</h3>
           <ul>
@@ -488,7 +541,8 @@
             <li><svg class="sw" width="26" height="7"><line x1="1" y1="3.5" x2="25" y2="3.5" stroke="var(--ink)" stroke-width="1.7" stroke-dasharray="9 4"></line></svg><span><b>黑线</b>　马莱亚角——两个世界之间的门槛。全图唯一的纯黑线，因为它是文本事实，不是证据等级</span></li>
           </ul>
         </div>
-      </div>
+        </div>
+      </details>
     </div>
 
     <div>
@@ -914,22 +968,26 @@
   COAST_D.forEach(d => gLand.appendChild(el("path",{class:"land", d})));
   svg.appendChild(gLand);
 
-  /* 现代城市（仅 major） */
+  /* 现代城市 —— 全图只显示 major，放大之后小城市一并出现 */
   const gCity = el("g",{});
-  CITY.filter(c=>c.major).forEach(c => {
-    const g = el("g",{class:"city"});
-    g.appendChild(el("rect",{x:px(c.lon)-2.4, y:py(c.la)-2.4, width:4.8, height:4.8}));
-    const t = el("text",{x:px(c.lon)+7, y:py(c.la)+3.6}); t.textContent=c.n;
+  const cityG = CITY.map(c => {
+    const x = px(c.lon), y = py(c.la);
+    const g = el("g",{class:"city" + (c.major ? "" : " minor"),
+                      transform:`translate(${x.toFixed(1)},${y.toFixed(1)})`});
+    g.appendChild(el("rect",{x:-2.4, y:-2.4, width:4.8, height:4.8}));
+    const t = el("text",{x:7, y:3.6}); t.textContent = c.n;
     g.appendChild(t); gCity.appendChild(g);
+    return {g, x, y};
   });
   svg.appendChild(gCity);
 
-  /* 比例尺 */
-  const sb = el("g",{class:"scalebar", transform:`translate(${W-160},${H-30})`});
-  const len = (200/111)*K;
-  sb.appendChild(el("path",{d:`M0 6 L0 0 L${len} 0 L${len} 6`}));
-  const st = el("text",{class:"scaletext", x:len+7, y:4}); st.textContent="200 km";
-  sb.appendChild(st); svg.appendChild(sb);
+  /* 比例尺 —— 文字放在反缩放层里，放大时不跟着变大 */
+  const sb = el("g",{class:"scalebar"});
+  const sbPath = el("path",{});
+  const sbT = el("g",{});
+  const st = el("text",{class:"scaletext", y:4});
+  sbT.appendChild(st); sb.appendChild(sbPath); sb.appendChild(sbT);
+  svg.appendChild(sb);
 
   /* 航线 */
   const ROUTE = [
@@ -1009,30 +1067,64 @@
     grid.appendChild(b); return b;
   });
 
-  /* ══ 定位小图 —— 复用 COAST 与投影，只改 viewBox ══════════════════ */
-  function locator(i){
-    const s = S[i], cx = px(s.lon), cy = py(s.la), half = (300/111)*K/2;
-    const vb = `${(cx-half).toFixed(1)} ${(cy-half).toFixed(1)} ${(half*2).toFixed(1)} ${(half*2).toFixed(1)}`;
-    const lands = COAST_D.map(d=>`<path class="land" d="${d}"/>`).join("");
-    let grats = "";
-    for(let lo=Math.ceil(LON0); lo<=LON1; lo++) grats += `<line x1="${px(lo)}" y1="0" x2="${px(lo)}" y2="${H}"/>`;
-    for(let la=Math.ceil(LAT0); la<=LAT1; la++) grats += `<line x1="0" y1="${py(la)}" x2="${W}" y2="${py(la)}"/>`;
-    const near = CITY.filter(c => Math.abs(px(c.lon)-cx) < half-14 && Math.abs(py(c.la)-cy) < half-10)
-      .map(c => `<g class="city"><rect x="${(px(c.lon)-2.6).toFixed(1)}" y="${(py(c.la)-2.6).toFixed(1)}" width="5.2" height="5.2"/>`
-               + `<text x="${(px(c.lon)+8).toFixed(1)}" y="${(py(c.la)+4).toFixed(1)}" style="font-size:11px">${c.n}</text></g>`).join("");
-    const sc = (100/111)*K;
-    return `<div class="lbox"><svg viewBox="${vb}" role="img" aria-label="${s.n}的现代位置">
-      <g class="grat" style="stroke-width:.6">${grats}</g>${lands}${near}
-      <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="12" fill="none"
-              stroke="var(--accent)" stroke-width="1.6"/>
-      <circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4.6" fill="var(--ev-${s.ev})"
-              stroke="var(--sea)" stroke-width="1.2"/>
-      <g class="scalebar" transform="translate(${(cx+half-sc-16).toFixed(1)},${(cy+half-16).toFixed(1)})">
-        <path d="M0 6 L0 0 L${sc.toFixed(1)} 0 L${sc.toFixed(1)} 6"/>
-        <text class="scaletext" x="${(sc/2).toFixed(1)}" y="-4" text-anchor="middle" style="font-size:10px">100 km</text>
-      </g></svg></div>
-      <div class="addr"><b>今天的地址</b><span>${s.addr}</span></div>`;
+  /* ══ 缩放 —— 双击地图放大到选中站，再双击还原 ═══════════════════════
+     不重画任何东西：只动 viewBox，然后把站点、城市、比例尺文字按同一个
+     系数反向缩放，让它们在屏幕上保持原来的大小。               */
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const NXY   = S.map(s => P(s));
+  const ZW    = 268, ZH = ZW * H / W;          // 放大窗口 ≈ 500 × 395 km
+  const FULL  = [0, 0, W, H];
+  let   view  = FULL.slice();
+  let   zoomI = null;                          // null = 全图
+  let   zraf  = null;
+
+  function stationView(i){
+    const [x, y] = NXY[i];
+    return [ Math.max(0, Math.min(W - ZW, x - ZW/2)),
+             Math.max(0, Math.min(H - ZH, y - ZH/2)), ZW, ZH ];
   }
+
+  function paint(v){
+    view = v;
+    svg.setAttribute("viewBox", v.map(n=>n.toFixed(1)).join(" "));
+    const k = v[2] / W;                        // k<1 即放大
+    const ks = k.toFixed(3);
+    nodes.forEach((g,i) => g.setAttribute("transform",
+      `translate(${NXY[i][0].toFixed(1)},${NXY[i][1].toFixed(1)}) scale(${ks})`));
+    cityG.forEach(c => c.g.setAttribute("transform",
+      `translate(${c.x.toFixed(1)},${c.y.toFixed(1)}) scale(${ks})`));
+
+    const km = k < .99 ? 100 : 200, L = (km/111)*K;
+    sbPath.setAttribute("d", `M0 6 L0 0 L${L.toFixed(1)} 0 L${L.toFixed(1)} 6`);
+    st.textContent = km + " km";
+    sbT.setAttribute("transform", `translate(${(L+7).toFixed(1)},0) scale(${ks})`);
+    sb.setAttribute("transform",
+      `translate(${(v[0]+v[2]-L-70*k).toFixed(1)},${(v[1]+v[3]-26*k).toFixed(1)})`);
+
+    svg.classList.toggle("zoomed", k < .99);
+  }
+
+  function glide(to){
+    if(zraf) cancelAnimationFrame(zraf);
+    if(reduce){ paint(to); return; }
+    const from = view.slice(), t0 = performance.now(), D = 460;
+    (function step(now){
+      const p = Math.min((now-t0)/D, 1);
+      const e = p<.5 ? 4*p*p*p : 1-Math.pow(-2*p+2,3)/2;   // ease-in-out-cubic
+      paint(from.map((f,j) => f + (to[j]-f)*e));
+      if(p<1) zraf = requestAnimationFrame(step);
+    })(t0);
+  }
+
+  function zoomTo(i){ zoomI = i; glide(stationView(i)); }
+  function zoomOut(){ zoomI = null; glide(FULL.slice()); }
+
+  svg.addEventListener("dblclick", e => {
+    e.preventDefault();
+    if(zoomI === null) zoomTo(cur); else zoomOut();
+  });
+  document.getElementById("zoomout").addEventListener("click", zoomOut);
+  paint(view);   // 初始化比例尺与各图层的缩放系数
 
   /* ══ 卡片 ═════════════════════════════════════════════════════════ */
   const EVN = {hard:"有考古遗存", conj:"学术推测", myth:"后世指认"};
@@ -1043,19 +1135,22 @@
   function render(i){
     const s = S[i];
     card.innerHTML = `
-      <div class="card-illus">${illusMarkup(i)}</div>
       <div class="card-head">
         <div class="card-meta">
           <span>第 ${String(i+1).padStart(2,"0")} 站</span><span>·</span><span>${s.book}</span>
           <span class="badge ${s.ev}">${EVN[s.ev]}</span>
-          <span>${ACN[s.acc]}</span>
           ${s.dispute ? '<span class="badge dispute">† 学界仍在争论</span>' : ""}
         </div>
-        <h2>${s.n}</h2>
-        <div class="lat">${s.lat}</div>
+        <div class="title-row">
+          <div class="ti"><h2>${s.n}</h2><div class="lat">${s.lat}</div></div>
+          <div class="card-illus">${illusMarkup(i)}</div>
+        </div>
         <p class="oneline">${s.one}</p>
+        <div class="addr">
+          <b>今天的地址</b><span>${s.addr}</span>
+          <button class="zoombtn" id="zoomto">在地图上放大 ⊕</button>
+        </div>
       </div>
-      <div class="locator">${locator(i)}</div>
       <div class="card-body">
         <div class="fld"><h3>荷马怎么写</h3><p>${s.homer}</p>
           ${s.q ? `<div class="quote">「${s.q.t}」<cite>${s.q.c}</cite></div>` : ""}</div>
@@ -1070,6 +1165,7 @@
       <div class="nav"><button id="prev">← 上一站</button><button id="next">下一站 →</button></div>`;
     card.querySelector("#prev").addEventListener("click", ()=>select((i+S.length-1)%S.length));
     card.querySelector("#next").addEventListener("click", ()=>select((i+1)%S.length));
+    card.querySelector("#zoomto").addEventListener("click", ()=>zoomTo(i));
   }
 
   function renderVoid(){
@@ -1087,6 +1183,7 @@
     nodes.forEach((g,k)=>g.classList.toggle("sel", k===i));
     tiles.forEach((b,k)=>b.classList.toggle("sel", k===i));
     const n = nodes[i]; n.parentNode.appendChild(n);
+    if(zoomI !== null) zoomTo(i);   // 已经放大时，跟着切换的站点平移
   }
 
   /* ══ 筛选 ═════════════════════════════════════════════════════════ */
@@ -1132,7 +1229,6 @@
   /* ══ 航线播放 ═════════════════════════════════════════════════════ */
   const playBtn = document.getElementById("play");
   let raf=null, playing=false;
-  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function stop(){
     playing=false; if(raf) cancelAnimationFrame(raf); raf=null;
@@ -1144,6 +1240,7 @@
     if(playing){ stop(); return; }
     if(reduce){ select(S.length-1); return; }
     if(proofOnly){ proofOnly=false; proofBtn.classList.remove("on"); applyFilter(); }
+    if(zoomI !== null) zoomOut();   // 播放航线要看全图
     playing=true; playBtn.textContent="■ 停止";
     nodes.forEach(g=>g.classList.add("unlit"));
     ship.setAttribute("opacity",1);
