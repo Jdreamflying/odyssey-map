@@ -111,6 +111,48 @@
 
   .wrap{ max-width: 1280px; margin: 0 auto; padding: 0 24px 72px; }
 
+  /* ══ 开场 ═══════════════════════════════════════════════════════════ */
+  #cinema{
+    position: fixed; inset: 0; z-index: 90; background: #070604;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity .7s ease;
+  }
+  #cinema.gone{ opacity: 0; pointer-events: none; }
+  #cincv{ display: block; width: 100%; height: 100%; }
+  .cin-ttl{
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);
+    text-align: center; color: #EDE6D4; opacity: 0; pointer-events: none;
+    text-shadow: 0 2px 26px rgba(0,0,0,.75);
+  }
+  .cin-ttl .zh{
+    font-family: var(--serif); font-weight: 700; letter-spacing: .1em;
+    font-size: clamp(30px, 6.6vw, 62px); line-height: 1.1;
+  }
+  .cin-ttl .gr{
+    font-family: var(--serif); font-style: italic; letter-spacing: .34em;
+    font-size: clamp(12px, 1.9vw, 17px); color: #B9AE93; margin-top: 14px;
+  }
+  .cin-ttl .sub{
+    font-size: clamp(12.5px, 1.6vw, 15px); color: #CFC5AC; margin-top: 16px;
+    letter-spacing: .04em;
+  }
+  #cinskip{
+    position: absolute; right: 18px; bottom: 16px; font: inherit; font-size: 11.5px;
+    letter-spacing: .1em; padding: 5px 14px; border-radius: 100px; cursor: pointer;
+    background: transparent; border: 1px solid rgba(237,230,212,.28); color: rgba(237,230,212,.62);
+    transition: color .18s, border-color .18s;
+  }
+  #cinskip:hover{ color: #EDE6D4; border-color: rgba(237,230,212,.6); }
+
+  /* 举到灯下的那团光 —— 极淡，用户不该看见它，只该觉得纸是活的 */
+  #plight{
+    position: fixed; inset: 0; z-index: 1; pointer-events: none; opacity: 0;
+    transition: opacity .5s ease; mix-blend-mode: soft-light;
+    background: radial-gradient(220px circle at var(--mx,-999px) var(--my,-999px),
+                rgba(255,232,178,.60), rgba(255,226,164,.24) 42%, transparent 72%);
+  }
+  #plight.on{ opacity: 1; }
+
   /* ══ masthead ═══════════════════════════════════════════════════════ */
   .masthead{ padding: 32px 0 20px; border-bottom: 1px solid var(--rule); }
   .eyebrow{
@@ -193,7 +235,8 @@
   .land, .grat, .seg, .malea-line, .scalebar path{ vector-effect: non-scaling-stroke; }
   .city.minor{ display: none; }
   .map.zoomed .city.minor{ display: inline; }
-  .map.zoomed .gratlabel, .map.zoomed .zone-tag, .map.zoomed .malea-tag{ display: none; }
+  .map.zoomed .gratlabel, .map.zoomed .zone-tag, .map.zoomed .malea-tag,
+  .map.zoomed .rose{ display: none; }
 
   .maphint, .mapout{
     position: absolute; left: 10px; bottom: 9px; font-size: 11.5px;
@@ -253,6 +296,60 @@
 
   .scalebar path, .scalebar line{ stroke: var(--ink-3); stroke-width: 1; fill:none; }
   .scaletext{ font-family: var(--mono); font-size: 9.5px; fill: var(--ink-3); }
+
+  /* 投石入水的涟漪 —— 细阴线，看得出是刻在纸上的 */
+  .ripple circle{
+    fill: none; stroke: var(--ink-2); stroke-width: 1;
+    stroke-dasharray: 1.1 3.2; stroke-linecap: round;
+    vector-effect: non-scaling-stroke; pointer-events: none;
+  }
+
+  /* 罗盘玫瑰 */
+  .rose{ pointer-events: none; }
+  .rose .pt{ fill: var(--ink-3); opacity: .5; }
+  .rose .pt.card{ fill: var(--ink-2); opacity: .68; }
+  .rose .rim{ fill: none; stroke: var(--ink-3); stroke-width: .9; opacity: .42;
+              vector-effect: non-scaling-stroke; }
+  .rose .tick{ stroke: var(--ink-3); stroke-width: .8; opacity: .38;
+               vector-effect: non-scaling-stroke; }
+  .rose .nlab{ font-family: var(--serif); font-style: italic; font-size: 11px;
+               fill: var(--ink-3); opacity: .6; text-anchor: middle; }
+  .rose .needle{ fill: var(--accent); opacity: .8; }
+  .rose .needle-b{ fill: var(--ink-3); opacity: .45; }
+  .rose .hub{ fill: var(--surface); stroke: var(--ink-3); stroke-width: .8;
+              vector-effect: non-scaling-stroke; }
+
+  /* ══ 时间尺 ═════════════════════════════════════════════════════════ */
+  .chron{ margin-top: 18px; }
+  .chron-head{
+    display:flex; align-items:baseline; justify-content:space-between; gap:14px;
+    margin-bottom: 9px;
+  }
+  .chron-head h3{
+    font-family: var(--mono); font-size: 10.5px; font-weight:500; letter-spacing:.14em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .chron-head span{ font-size: 12.5px; color: var(--ink-3); text-align: right; }
+  .chron-head span b{ color: var(--ink); font-weight: 600; }
+  .chron-bar{
+    display: flex; height: 15px; width: 100%; gap: 1px;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    padding: 2px 0; background: var(--rule-soft);
+  }
+  /* 底色由 JS 逐段合成：实心部分＝史诗明文的天数，阴线部分＝没交代的 */
+  .chron-seg{
+    height: 100%; min-width: 1px; cursor: pointer;
+    border: 0; padding: 0; transition: opacity .22s; position: relative;
+  }
+  .chron-seg:hover{ opacity: .8 !important; }
+  .chron-ends{
+    display:flex; justify-content:space-between; margin-top: 6px;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing:.1em; color: var(--ink-3);
+  }
+  .chron-note{
+    margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--rule-soft);
+    font-size: 13px; color: var(--ink-2); line-height: 1.7;
+  }
 
   /* ══ 全览格 ═════════════════════════════════════════════════════════ */
   .gallery{ margin-top: 16px; }
@@ -481,6 +578,20 @@
 </head>
 <body>
 
+<!-- ══ 开场 ══════════════════════════════════════════════════════════ -->
+<div id="cinema" role="presentation">
+  <canvas id="cincv"></canvas>
+  <div class="cin-ttl" id="cinttl">
+    <div class="zh">重返奥德赛</div>
+    <div class="gr">ΟΔΥΣΣΕΙΑ</div>
+    <div class="sub">十三个地点，和它们各自的证据</div>
+  </div>
+  <button id="cinskip">跳过</button>
+</div>
+
+<!-- 举到灯下的那团光 -->
+<div id="plight" aria-hidden="true"></div>
+
 <div class="wrap">
 
   <header class="masthead">
@@ -519,6 +630,17 @@
         <div class="maphint">单击选站 · 双击放大 · 放大后可拖动</div>
         <button class="mapout" id="zoomout">↩ 回到全图</button>
       </div>
+
+      <!-- ══ 时间尺 ══ -->
+      <section class="chron">
+        <div class="chron-head">
+          <h3>归乡的十年</h3>
+          <span id="chronnow">选中任何一站，看它在这十年里占掉多久</span>
+        </div>
+        <div class="chron-bar" id="chronbar"></div>
+        <div class="chron-ends"><span>特洛伊陷落</span><span>回到伊萨卡</span></div>
+        <p class="chron-note">十年归乡，其中八年，他停在两个地方没有动。</p>
+      </section>
 
       <section class="gallery">
         <div class="gal-head">
@@ -1012,6 +1134,39 @@
   sbT.appendChild(st); sb.appendChild(sbPath); sb.appendChild(sbT);
   svg.appendChild(sb);
 
+  /* 罗盘玫瑰 —— 东地中海一块空海（26.8°E, 32.6°N，半径内无陆地）。
+     指针会转向被选中的站，用余光就能感到整张纸响应了一下。 */
+  const ROSEC = [px(26.8), py(32.6)], RR = 42;
+  const gRose = el("g",{class:"rose",
+    transform:`translate(${ROSEC[0].toFixed(1)},${ROSEC[1].toFixed(1)})`});
+  [RR, RR*0.80, RR*0.30].forEach(r => gRose.appendChild(el("circle",{class:"rim", r:r.toFixed(1)})));
+  for(let i=0;i<32;i++){
+    const a = i*Math.PI/16, o = (i%4) ? RR*0.90 : RR*0.80;
+    gRose.appendChild(el("line",{class:"tick",
+      x1:(Math.sin(a)*o).toFixed(1),  y1:(-Math.cos(a)*o).toFixed(1),
+      x2:(Math.sin(a)*RR).toFixed(1), y2:(-Math.cos(a)*RR).toFixed(1)}));
+  }
+  for(let i=0;i<8;i++){
+    const a = i*Math.PI/4, len = (i%2) ? RR*0.50 : RR*0.76, w = RR*0.095;
+    const T=[Math.sin(a)*len, -Math.cos(a)*len];
+    const L=[Math.sin(a+Math.PI/2)*w, -Math.cos(a+Math.PI/2)*w];
+    const G=[Math.sin(a-Math.PI/2)*w, -Math.cos(a-Math.PI/2)*w];
+    gRose.appendChild(el("path",{class:"pt"+((i%2)?"":" card"),
+      d:`M0 0L${L[0].toFixed(1)} ${L[1].toFixed(1)}L${T[0].toFixed(1)} ${T[1].toFixed(1)}Z`}));
+    gRose.appendChild(el("path",{class:"pt"+((i%2)?"":" card"), opacity:(i%2)?.32:.46,
+      d:`M0 0L${G[0].toFixed(1)} ${G[1].toFixed(1)}L${T[0].toFixed(1)} ${T[1].toFixed(1)}Z`}));
+  }
+  const nlab = el("text",{class:"nlab", y:(-RR-7).toFixed(1)}); nlab.textContent = "N";
+  gRose.appendChild(nlab);
+  const needle = el("g",{});
+  needle.appendChild(el("path",{class:"needle-b",
+    d:`M0 0L${(RR*0.095).toFixed(1)} 0L0 ${(RR*0.60).toFixed(1)}L${(-RR*0.095).toFixed(1)} 0Z`}));
+  needle.appendChild(el("path",{class:"needle",
+    d:`M0 0L${(RR*0.095).toFixed(1)} 0L0 ${(-RR*0.60).toFixed(1)}L${(-RR*0.095).toFixed(1)} 0Z`}));
+  gRose.appendChild(needle);
+  gRose.appendChild(el("circle",{class:"hub", r:(RR*0.075).toFixed(1)}));
+  svg.appendChild(gRose);
+
   /* 航线 */
   /* 航线 —— 不是两点直连。每段给出中继点，走真实可航的海路：
      出达达尼尔绕英布罗斯、南下爱琴海绕马莱亚角、沿西西里东岸穿墨西拿海峡、
@@ -1114,6 +1269,9 @@
   /* 站点 */
   const LOFF = {e:[14,4,"start"], w:[-14,4,"end"], n:[0,-15,"middle"], s:[0,19,"middle"],
                 ne:[12,-9,"start"], nw:[-12,-9,"end"], se:[12,16,"start"], sw:[-12,16,"end"]};
+  const gRip = el("g",{});          // 涟漪层：在航线之上、站点之下
+  svg.appendChild(gRip);
+
   const gNodes = el("g",{});
   const nodes = S.map((s,i) => {
     const [x,y] = P(s);
@@ -1319,6 +1477,7 @@
     tiles.forEach((b,k)=>b.classList.toggle("sel", k===i));
     const n = nodes[i]; n.parentNode.appendChild(n);
     if(zoomI !== null) zoomTo(i);   // 已经放大时，跟着切换的站点平移
+    ripple(i); roseTo(i); chronShow(i);
   }
 
   /* ══ 筛选 ═════════════════════════════════════════════════════════ */
@@ -1401,7 +1560,441 @@
     if(e.key === "ArrowLeft")  select((cur+S.length-1)%S.length);
   });
 
+  /* ══ 涟漪 · 罗盘 · 时间尺 · 纸上的光 ═══════════════════════════════ */
+
+  /* 投石入水 —— 三圈细阴线，600ms 内向外 120px 后淡尽 */
+  function ripple(i){
+    if(reduce || !gRip) return;
+    const [x,y] = NXY[i];
+    const g = el("g",{class:"ripple",
+      transform:`translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${mapK.toFixed(3)})`});
+    const cs = [0,1,2].map(()=>{ const c = el("circle",{r:2, opacity:0}); g.appendChild(c); return c; });
+    gRip.appendChild(g);
+    const r = svg.getBoundingClientRect();
+    const RMAX = 120 * (r.width ? view[2]/r.width : 1.24) / (mapK || 1);
+    const t0 = performance.now(), D = 600;
+    (function step(now){
+      const p = Math.min((now-t0)/D, 1);
+      cs.forEach((c,k)=>{
+        const lag = k*0.14, q = Math.max(0, Math.min(1, (p-lag)/(1-lag)));
+        const e = 1 - Math.pow(1-q, 2.2);
+        c.setAttribute("r", (3 + e*RMAX).toFixed(1));
+        c.setAttribute("opacity", (q <= 0 ? 0 : (1-q)*0.55).toFixed(3));
+      });
+      if(p < 1) requestAnimationFrame(step); else g.remove();
+    })(t0);
+  }
+
+  /* 罗盘指针转向选中的站 —— 900ms，到位时轻微过冲再回正 */
+  let roseDeg = 0, roseRaf = null;
+  function roseTo(i){
+    const [x,y] = NXY[i];
+    const target = Math.atan2(x - ROSEC[0], -(y - ROSEC[1])) * 180/Math.PI;
+    let delta = ((target - roseDeg) % 360 + 540) % 360 - 180;   // 走近路
+    const from = roseDeg, to = from + delta;
+    if(reduce){ roseDeg = to; needle.setAttribute("transform",`rotate(${to.toFixed(2)})`); return; }
+    if(roseRaf) cancelAnimationFrame(roseRaf);
+    const t0 = performance.now(), D = 900;
+    (function step(now){
+      const p = Math.min((now-t0)/D, 1);
+      const c1 = 0.9, c3 = c1 + 1;                              // easeOutBack，过冲很轻
+      const e = 1 + c3*Math.pow(p-1,3) + c1*Math.pow(p-1,2);
+      roseDeg = from + (to-from)*e;
+      needle.setAttribute("transform",`rotate(${roseDeg.toFixed(2)})`);
+      if(p < 1) roseRaf = requestAnimationFrame(step); else roseDeg = to;
+    })(t0);
+  }
+
+  /* 时间尺 —— 归乡的十年。
+     史诗只给出六个确切时长：马莱亚角外漂流 9 天（卷九）、风神岛做客 1 个月
+     与其后航行 9 天（卷十）、喀耳刻岛整整一年（卷十）、特里纳基亚南风连吹
+     1 个月（卷十二）、沉船后漂流 9 天（卷十二）、俄古癸亚七年（卷五、卷七）、
+     木筏 17 天（卷五）。其余停留史诗没有计时，一律画成阴线，不替它编数字。 */
+  const CHRON = [
+    {i:0,  ex:0,    vg:70, t:"启航"},
+    {i:1,  ex:0,    vg:70, t:"劫掠伊斯马罗斯，遭反击折损"},
+    {i:2,  ex:9,    vg:70, t:"马莱亚角外被北风推着漂了 9 天"},
+    {i:3,  ex:0,    vg:70, t:"困在洞里"},
+    {i:4,  ex:39,   vg:0,  t:"做客 1 个月，再航行 9 天，望见伊萨卡时被吹回"},
+    {i:5,  ex:0,    vg:70, t:"全队十一船覆没，只剩他一条"},
+    {i:6,  ex:365,  vg:0,  t:"在喀耳刻岛整整住满一年"},
+    {i:7,  ex:0,    vg:70, t:"往返冥府"},
+    {i:8,  ex:0,    vg:70, t:"穿过海峡"},
+    {i:9,  ex:30,   vg:0,  t:"南风连吹一个月，走不了"},
+    {i:10, ex:2564, vg:0,  t:"在俄古癸亚被留了七年"},
+    {i:11, ex:17,   vg:70, t:"木筏漂流 17 天后被冲上岸"},
+    {i:12, ex:0,    vg:70, t:"到岸"}
+  ];
+  const CHRON_TOTAL = CHRON.reduce((a,c)=>a+c.ex+c.vg, 0);
+  const chronBar = document.getElementById("chronbar");
+  const chronNow = document.getElementById("chronnow");
+  /* 一段之内：实心＝史诗给出的天数，阴线＝史诗没交代的。
+     所以食莲人、斯刻里亚这种「有明文但停留没计时」的站，
+     不会被画成一整条实心，假装我们知道它停了多久。 */
+  function paintSeg(b, c, on){
+    const col = on ? "var(--accent)" : `var(--ev-${S[c.i].ev})`;
+    const solid = c.ex / (c.ex + c.vg) * 100;
+    b.style.background =
+      `linear-gradient(90deg, ${col} 0 ${solid.toFixed(2)}%, rgba(0,0,0,0) ${solid.toFixed(2)}%),`
+      + `repeating-linear-gradient(45deg, ${col} 0 1.5px, rgba(0,0,0,0) 1.5px 4px)`;
+    b.style.opacity = on ? "1" : ".40";
+  }
+  const chronSegs = CHRON.map(c => {
+    const b = document.createElement("button");
+    b.className = "chron-seg" + (c.ex ? "" : " vague");
+    b.style.flexGrow = String(c.ex + c.vg);
+    b.style.flexShrink = "0"; b.style.flexBasis = "0";
+    b.setAttribute("aria-label", S[c.i].n + "：" + c.t);
+    b.title = S[c.i].n + " · " + c.t;
+    b.addEventListener("click", ()=>select(c.i));
+    paintSeg(b, c, false);
+    chronBar.appendChild(b);
+    return b;
+  });
+  function chronShow(i){
+    const k = CHRON.findIndex(c => c.i === i);
+    chronSegs.forEach((b,j)=>{ b.classList.toggle("sel", j===k); paintSeg(b, CHRON[j], j===k); });
+    if(k < 0) return;
+    const c = CHRON[k];
+    const pct = c.ex / CHRON_TOTAL * 100;
+    const share = c.ex
+      ? `占这十年的 ${pct < 1 ? "不到 1" : pct.toFixed(pct < 10 ? 1 : 0)}%`
+      : "";
+    chronNow.innerHTML = !c.ex
+      ? `<b>${S[c.i].n}</b>　${c.t}　·　<span style="opacity:.72">史诗没有说这一站停了多久</span>`
+      : c.vg
+        ? `<b>${S[c.i].n}</b>　${c.t}　·　${share}　·　<span style="opacity:.72">此外还停了多久，史诗没说</span>`
+        : `<b>${S[c.i].n}</b>　${c.t}　·　${share}`;
+  }
+
+  /* 把纸举到灯下 */
+  (function paperLight(){
+    const pl = document.getElementById("plight");
+    if(!pl) return;
+    if(reduce || !matchMedia("(hover:hover) and (pointer:fine)").matches){ pl.remove(); return; }
+    let lx = 0, ly = 0, q = null;
+    addEventListener("pointermove", e => {
+      if(e.pointerType === "touch") return;
+      lx = e.clientX; ly = e.clientY;
+      pl.classList.add("on");
+      if(q) return;
+      q = requestAnimationFrame(()=>{
+        pl.style.setProperty("--mx", lx + "px");
+        pl.style.setProperty("--my", ly + "px");
+        q = null;
+      });
+    }, {passive:true});
+    document.addEventListener("mouseleave", ()=>pl.classList.remove("on"));
+  })();
+
   select(0);
+
+  /* ══ 开场 ═══════════════════════════════════════════════════════════
+     四层各自运动：底层海图右漂并从 1.00 推到 1.06；中层物件负责叙事；
+     浮层颗粒反向漂、三倍速；光层一道斜光带八秒扫过一次。
+     溶解不用 opacity，走颗粒阈值——下一张从颗粒缝隙里长出来。      */
+  (function cinema(){
+    const stage = document.getElementById("cinema");
+    if(!stage) return;
+    const done = () => {
+      stage.classList.add("gone");
+      setTimeout(()=>stage.remove(), 760);
+      document.documentElement.style.removeProperty("overflow");
+    };
+    let seen = false;
+    try{ seen = sessionStorage.getItem("odyssey-intro") === "1"; }catch(_){}
+    if(seen){ stage.remove(); return; }
+
+    const cv = document.getElementById("cincv");
+    const ttl = document.getElementById("cinttl");
+    const skipBtn = document.getElementById("cinskip");
+    // canvas 拿不到就干脆不放开场 —— 绝不能让它把页面卡在不可滚动的状态
+    const ctx = cv && cv.getContext ? cv.getContext("2d") : null;
+    if(!ctx || !ctx.setTransform || typeof Path2D === "undefined"){ stage.remove(); return; }
+
+    try{ sessionStorage.setItem("odyssey-intro","1"); }catch(_){}
+    document.documentElement.style.overflow = "hidden";
+    let Wc = 1, Hc = 1;
+    function size(){
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      Wc = stage.clientWidth || 1; Hc = stage.clientHeight || 1;
+      cv.width = Math.round(Wc*dpr); cv.height = Math.round(Hc*dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    size(); addEventListener("resize", size);
+
+    const INK = "#2A2418", PAPER = "#D9D5C7", SEACOL = "#8FA0A0";
+
+    /* —— 颗粒场与阈值遮罩 —— */
+    const MW = 200, MN = 13;
+    function field(grad){
+      const f = new Float32Array(MW*MW);
+      for(let oct=0, amp=1, cell=7; oct<4; oct++, amp*=0.55, cell*=2){
+        const gw = Math.ceil(MW/cell)+2;
+        const g = new Float32Array(gw*gw);
+        for(let i=0;i<g.length;i++) g[i] = Math.random();
+        for(let y=0;y<MW;y++) for(let x=0;x<MW;x++){
+          const fx=x/cell, fy=y/cell, ix=fx|0, iy=fy|0, tx=fx-ix, ty=fy-iy;
+          const sx=tx*tx*(3-2*tx), sy=ty*ty*(3-2*ty);
+          const a=g[iy*gw+ix], b=g[iy*gw+ix+1], c=g[(iy+1)*gw+ix], d=g[(iy+1)*gw+ix+1];
+          f[y*MW+x] += amp*((a+(b-a)*sx)*(1-sy) + (c+(d-c)*sx)*sy);
+        }
+      }
+      let mn=Infinity, mx=-Infinity;
+      for(let i=0;i<f.length;i++){ if(f[i]<mn)mn=f[i]; if(f[i]>mx)mx=f[i]; }
+      const s = mx-mn || 1;
+      for(let i=0;i<f.length;i++) f[i] = (f[i]-mn)/s;
+      if(grad) for(let y=0;y<MW;y++) for(let x=0;x<MW;x++)
+        f[y*MW+x] = f[y*MW+x]*0.5 + (1 - y/MW)*0.5;    // 底部先走
+      return f;
+    }
+    function masks(grad, keepAbove){
+      const f = field(grad), out = [];
+      for(let k=0;k<MN;k++){
+        const c = document.createElement("canvas"); c.width = c.height = MW;
+        const cx = c.getContext("2d"), img = cx.createImageData(MW,MW), D = img.data;
+        const th = k/(MN-1);
+        for(let i=0;i<MW*MW;i++) D[i*4+3] = (keepAbove ? f[i] > th : f[i] <= th) ? 255 : 0;
+        cx.putImageData(img,0,0); out.push(c);
+      }
+      return out;
+    }
+    const M_IN = masks(false,false), M_OUT = masks(true,true);
+    const mIn  = p => M_IN [Math.max(0,Math.min(MN-1, Math.round(p*(MN-1))))];
+    const mOut = p => M_OUT[Math.max(0,Math.min(MN-1, Math.round(p*(MN-1))))];
+
+    /* —— 浮层：颗粒、划痕、墨点，一次画好反复用 —— */
+    const GT = document.createElement("canvas"); GT.width = GT.height = 260;
+    (function(){
+      const g = GT.getContext("2d");
+      const img = g.createImageData(260,260), D = img.data;
+      for(let i=0;i<260*260;i++){
+        const v = Math.random();
+        D[i*4] = D[i*4+1] = D[i*4+2] = 255;
+        D[i*4+3] = v > 0.86 ? (v-0.86)/0.14*70 : 0;
+      }
+      g.putImageData(img,0,0);
+      g.strokeStyle = "rgba(255,255,255,.20)"; g.lineWidth = 0.7;
+      for(let i=0;i<7;i++){                                  // 划痕
+        const x = Math.random()*260;
+        g.beginPath(); g.moveTo(x, 0);
+        g.lineTo(x + (Math.random()*14-7), 260); g.stroke();
+      }
+      g.fillStyle = "rgba(20,16,10,.30)";
+      for(let i=0;i<26;i++){                                 // 极淡的墨点
+        g.beginPath();
+        g.arc(Math.random()*260, Math.random()*260, Math.random()*1.5+0.3, 0, 7); g.fill();
+      }
+    })();
+
+    /* —— 中层物件 —— */
+    const HELMET = `
+      <path class="ln" d="M32 76c0-21 12-38 28-38s28 17 28 38v10c0 11-6 20-15 24-2 1-4-1-4-3V90"/>
+      <path class="ln" d="M32 76v10c0 11 6 20 15 24 2 1 4-1 4-3V90"/>
+      <path class="ln" d="M60 38v56"/>
+      <path class="fl" d="M41 68c3-5 9-6 12-2-1 6-5 9-9 9-3 0-4-3-3-7z"/>
+      <path class="fl" d="M79 68c-3-5-9-6-12-2 1 6 5 9 9 9 3 0 4-3 3-7z"/>
+      <path class="ln thin" d="M39 56c6-5 13-8 21-8s15 3 21 8"/>
+      <path class="ln" d="M40 44c4-15 12-23 24-22 14 1 21 11 22 26"/>`;
+    const GALLEY = `
+      <path class="ln" d="M18 74h84l-9 15c-2 4-6 6-10 6H37c-4 0-8-2-10-6z"/>
+      <path class="ln" d="M18 74l-9-5 11-3"/>
+      <path class="ln" d="M102 74c7-5 10-11 9-18"/>
+      <path class="ln" d="M60 74V24"/>
+      <path class="ln thin" d="M34 32h52"/>
+      <path class="ln" d="M34 32c5 15 13 22 26 22s21-7 26-22"/>
+      <path class="ln thin" d="M30 90l-9 10M42 92l-9 10M54 94l-9 10M66 94l9 10M78 92l9 10M90 90l9 10"/>`;
+
+    function parse(mk){
+      const out = [];
+      const re = /<(path|circle)([^>]*?)\/>/g; let m;
+      while((m = re.exec(mk))){
+        const at = m[2];
+        const cls = (at.match(/class="([^"]*)"/) || [])[1] || "";
+        if(m[1] === "path"){
+          const d = (at.match(/\sd="([^"]*)"/) || [])[1];
+          if(d) out.push({cls, p:new Path2D(d)});
+        }else{
+          const g = k => parseFloat((at.match(new RegExp('\\s'+k+'="([^"]*)"')) || [])[1] || 0);
+          const p = new Path2D(); p.arc(g("cx"), g("cy"), g("r"), 0, 7);
+          out.push({cls, p});
+        }
+      }
+      return out;
+    }
+    const OBJS = [parse(HELMET), parse(GALLEY), parse(ILLUS[11]), parse(ILLUS[12])];
+    const TILES = ILLUS.map(parse);
+
+    function drawObj(g, parts, cell){
+      g.save(); g.scale(cell/120, cell/120);
+      g.lineCap = "round"; g.lineJoin = "round";
+      for(const it of parts){
+        const sea = it.cls.includes("sea") || it.cls === "b";
+        g.setLineDash(it.cls.includes("dash") ? [3.5,3.5] : []);
+        if(it.cls.includes("fl")){ g.fillStyle = INK; g.globalAlpha = 1; g.fill(it.p); continue; }
+        g.strokeStyle = sea ? SEACOL : INK;
+        g.lineWidth = sea ? 2.6 : it.cls.includes("thin") ? 1.1 : 1.7;
+        g.globalAlpha = it.cls.includes("thin") ? 0.72 : 1;
+        g.stroke(it.p);
+      }
+      g.globalAlpha = 1; g.setLineDash([]); g.restore();
+    }
+
+    /* 物件画到离屏画布，再用颗粒遮罩切一刀 */
+    const OB = document.createElement("canvas"); OB.width = OB.height = 460;
+    const obx = OB.getContext("2d");
+    function stamp(parts, cell, p, out){
+      obx.clearRect(0,0,460,460);
+      obx.save(); obx.translate((460-cell)/2, (460-cell)/2);
+      drawObj(obx, parts, cell); obx.restore();
+      if(p < 0.999){
+        obx.globalCompositeOperation = "destination-in";
+        obx.drawImage(out ? mOut(p) : mIn(p), 0, 0, 460, 460);
+        obx.globalCompositeOperation = "source-over";
+      }
+      return OB;
+    }
+
+    /* —— 底层：这张纸上真正的海图 —— */
+    const CHART = COAST_D.map(d => new Path2D(d));
+
+    /* —— 节拍 —— */
+    const BEAT = [1000, 2200, 3400, 4600, 5800, 7000];
+    const END  = 8000;
+    const ease = p => p<.5 ? 4*p*p*p : 1 - Math.pow(-2*p+2,3)/2;
+    const clamp01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+
+    let rate = 1, raf = null, over = false, clock = 0, last = 0;
+    if(reduce){ frame(END - 1); ttl.style.opacity = 1; setTimeout(done, 1600); return; }
+
+    function frame(T){
+      ctx.clearRect(0,0,Wc,Hc);
+      const flick = 1 - (Math.sin(T*0.031) * 0.5 + Math.sin(T*0.077) * 0.5 + 1) * 0.012;
+
+      // 底层：海图，匀速右漂 + 1.00→1.06
+      const gp = T/END;
+      const fit = Math.max(Wc/989, Hc/780) * 1.28;
+      ctx.save();
+      ctx.globalAlpha = 0.30 * flick;
+      ctx.translate(Wc/2 + (gp - 0.5) * Wc * 0.10, Hc/2);
+      ctx.scale(fit*(1 + gp*0.06), fit*(1 + gp*0.06));
+      ctx.translate(-494, -390);
+      ctx.fillStyle = PAPER; ctx.fillRect(-400,-400, 1789, 1580);
+      ctx.strokeStyle = "rgba(42,36,24,.42)"; ctx.lineWidth = 1.1;
+      for(const p of CHART) ctx.stroke(p);
+      ctx.strokeStyle = "rgba(42,36,24,.10)"; ctx.lineWidth = 0.7;
+      for(let x=0;x<=989;x+=41){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,780); ctx.stroke(); }
+      for(let y=0;y<=780;y+=40){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(989,y); ctx.stroke(); }
+      ctx.restore();
+
+      // 中层：叙事物件
+      const cell = Math.min(Wc, Hc) * 0.34;
+      if(T < BEAT[4]){
+        for(let k=0;k<4;k++){
+          const st = BEAT[k], en = BEAT[k+1];
+          if(T < st - 60) continue;
+          const inP  = clamp01((T - st) / 560);
+          const outP = k < 3 ? clamp01((T - en) / 520) : 0;
+          if(outP >= 1) continue;
+          const img = outP > 0 ? stamp(OBJS[k], cell, outP, true)
+                               : stamp(OBJS[k], cell, inP, false);
+          ctx.save();
+          ctx.globalAlpha = flick;
+          const rise = outP > 0 ? outP*26 : (1-inP)*-14;
+          ctx.drawImage(img, Wc/2-230, Hc/2-230 + rise);
+          ctx.restore();
+        }
+      } else {
+        // 镜头退开：狗缩小，另外十二件从画外浮入，排成 4×4
+        const gq = ease(clamp01((T - BEAT[4]) / 1200));
+        const cs = Math.min(Wc, Hc) * 0.128, gap = cs * 0.16;
+        const gw = 4*cs + 3*gap, x0 = (Wc-gw)/2, y0 = (Hc - (4*cs+3*gap))/2;
+        const at = i => {
+          const c = i===12 ? 1.5 : i%4, r = i===12 ? 3 : (i/4)|0;
+          return [x0 + c*(cs+gap), y0 + r*(cs+gap)];
+        };
+        for(let i=0;i<13;i++){
+          const [gx,gy] = at(i);
+          let x, y, s = cs;
+          if(i === 12){
+            x = Wc/2-cell/2 + (gx - (Wc/2-cell/2))*gq;
+            y = Hc/2-cell/2 + (gy - (Hc/2-cell/2))*gq;
+            s = cell + (cs-cell)*gq;
+          }else{
+            const a = (i/12)*Math.PI*2 + 0.4, rad = Math.max(Wc,Hc)*0.78;
+            const sx = Wc/2 + Math.cos(a)*rad, sy = Hc/2 + Math.sin(a)*rad;
+            const d = ease(clamp01((T - BEAT[4] - i*42) / 1100));
+            x = sx + (gx-sx)*d; y = sy + (gy-sy)*d;
+          }
+          ctx.save(); ctx.globalAlpha = flick * (i===12 ? 1 : clamp01((T-BEAT[4]-i*42)/420));
+          ctx.translate(x, y); drawObj(ctx, TILES[i], s); ctx.restore();
+        }
+      }
+
+      // 浮层：颗粒反向漂，三倍速
+      ctx.save();
+      ctx.globalAlpha = 0.5 * flick;
+      const gx = -((gp*3) % 1) * 260, gy = ((gp*3) % 1) * 60;
+      for(let x=gx-260; x<Wc+260; x+=260)
+        for(let y=gy-260; y<Hc+260; y+=260) ctx.drawImage(GT, x, y);
+      ctx.restore();
+
+      // 光层：左上斜切的柔光带，八秒扫过一次
+      ctx.save();
+      const sw = gp*2.2 - 0.5, cx = Wc*sw, cy = Hc*sw;
+      const lg = ctx.createLinearGradient(cx-Wc*0.42, cy-Hc*0.42, cx+Wc*0.42, cy+Hc*0.42);
+      lg.addColorStop(0,   "rgba(255,246,222,0)");
+      lg.addColorStop(0.5, "rgba(255,246,222,.17)");
+      lg.addColorStop(1,   "rgba(255,246,222,0)");
+      ctx.fillStyle = lg; ctx.fillRect(0,0,Wc,Hc);
+      ctx.restore();
+
+      // 暗角
+      const vg = ctx.createRadialGradient(Wc/2,Hc/2, Math.min(Wc,Hc)*0.28,
+                                          Wc/2,Hc/2, Math.max(Wc,Hc)*0.76);
+      vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.62)");
+      ctx.fillStyle = vg; ctx.fillRect(0,0,Wc,Hc);
+
+      // 曝光过冲：每次切换整幅亮度上跳 8%，80ms 落回
+      let boost = 0;
+      for(const b of BEAT){ const dt = T - b; if(dt >= 0 && dt < 80) boost = Math.max(boost, (1 - dt/80)*0.08); }
+      if(boost > 0){
+        ctx.save(); ctx.globalCompositeOperation = "lighter";
+        ctx.fillStyle = `rgba(255,248,228,${boost.toFixed(3)})`;
+        ctx.fillRect(0,0,Wc,Hc); ctx.restore();
+      }
+
+      // 0–1s：纸从中间显影出来，不是淡入
+      if(T < BEAT[0]){
+        const p = clamp01(T/BEAT[0]);
+        ctx.globalCompositeOperation = "destination-in";
+        const rg = ctx.createRadialGradient(Wc/2,Hc/2,0, Wc/2,Hc/2, Math.max(Wc,Hc)*0.8*p + 1);
+        rg.addColorStop(0,"#000"); rg.addColorStop(0.72,"#000"); rg.addColorStop(1,"rgba(0,0,0,0)");
+        ctx.fillStyle = rg; ctx.fillRect(0,0,Wc,Hc);
+        ctx.drawImage(mIn(p*0.92), 0, 0, Wc, Hc);
+        ctx.globalCompositeOperation = "source-over";
+      }
+
+      ttl.style.opacity = clamp01((T - BEAT[5]) / 700).toFixed(3);
+    }
+
+    function loop(now){
+      clock += Math.min(now - last, 60) * rate;   // 标签切走再回来不跳帧
+      last = now;
+      try{ frame(Math.min(clock, END)); }
+      catch(err){ done(); return; }               // 宁可不放开场，也不能把页面卡住
+      if(clock >= END){ done(); return; }
+      raf = requestAnimationFrame(loop);
+    }
+    raf = requestAnimationFrame(n => { last = n; raf = requestAnimationFrame(loop); });
+
+    skipBtn.addEventListener("click", () => {
+      if(over) return; over = true;
+      rate = 7;                       // 加速走完剩余节拍，不硬切
+      skipBtn.textContent = "…";
+    });
+    stage.addEventListener("click", e => { if(e.target !== skipBtn) skipBtn.click(); });
+  })();
 })();
 </script>
 </body>
