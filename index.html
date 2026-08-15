@@ -183,9 +183,14 @@
     border-radius: 2px; overflow: hidden; position: relative;
   }
   svg.map{ display:block; width:100%; height:auto; cursor: pointer; touch-action: manipulation; }
+  svg.map.zoomed{ cursor: grab; touch-action: none; }   /* 放大后可拖动 */
+  svg.map.grabbing{ cursor: grabbing; }
 
-  /* 只动 viewBox，所以这些线的粗细要固定在屏幕上 */
-  .land, .grat, .seg, .trail, .malea-line, .scalebar path{ vector-effect: non-scaling-stroke; }
+  /* 只动 viewBox，所以这些线的粗细要固定在屏幕上。
+     .trail 不能放进来：它靠 stroke-dasharray = 路径总长 做航迹动画，
+     而 non-scaling-stroke 会让虚线按设备像素算，单位对不上，
+     末端会漏出一截、起点也接不上。它的线宽改在 paint() 里按比例调。 */
+  .land, .grat, .seg, .malea-line, .scalebar path{ vector-effect: non-scaling-stroke; }
   .city.minor{ display: none; }
   .map.zoomed .city.minor{ display: inline; }
   .map.zoomed .gratlabel, .map.zoomed .zone-tag, .map.zoomed .malea-tag{ display: none; }
@@ -511,7 +516,7 @@
       <div class="mapbox">
         <svg class="map" id="map" role="img"
           aria-label="地中海东部与中部海图，标出《奥德赛》十三个停靠站及其证据等级"></svg>
-        <div class="maphint">单击选站 · 双击放大</div>
+        <div class="maphint">单击选站 · 双击放大 · 放大后可拖动</div>
         <button class="mapout" id="zoomout">↩ 回到全图</button>
       </div>
 
@@ -858,8 +863,8 @@
 
   /* ══ 海岸线（海图级概化） ═════════════════════════════════════════ */
   const COAST = [
-    [[10.3,45],[10.3,43.0],[10.5,42.4],[11.2,42.4],[11.8,42.1],[12.2,41.8],[12.0,41.4],[12.6,41.45],[13.1,41.2],[13.6,41.2],[14.0,40.8],[14.3,40.85],[14.5,40.6],[14.9,40.65],[15.3,40.0],[15.6,40.05],[15.9,39.6],[16.1,39.3],[15.9,38.9],[15.6,38.2],[16.1,37.9],[16.6,38.1],[17.2,38.9],[17.1,39.3],[16.5,39.6],[16.9,40.0],[17.2,40.4],[17.9,40.4],[18.5,40.15],[18.4,40.5],[18.0,40.7],[17.3,40.9],[16.5,41.2],[16.0,41.4],[15.9,41.6],[16.2,41.9],[15.4,42.0],[14.8,42.2],[14.0,42.5],[13.6,43.0],[13.5,43.6],[12.6,44.1],[12.4,45]],
-    [[12.43,37.80],[13.1,38.05],[13.35,38.22],[14.0,38.05],[14.7,38.03],[15.24,38.30],[15.65,38.26],[15.10,37.50],[15.30,37.10],[15.10,36.68],[14.50,36.78],[13.90,37.10],[12.90,37.57]],
+    [[10.3,45],[10.3,43.0],[10.5,42.4],[11.2,42.4],[11.8,42.1],[12.2,41.8],[12.0,41.4],[12.6,41.45],[13.1,41.2],[13.6,41.2],[14.0,40.8],[14.3,40.85],[14.5,40.6],[14.9,40.65],[15.3,40.0],[15.6,40.05],[15.9,39.6],[16.1,39.3],[15.9,38.9],[15.83,38.62],[15.75,38.22],[15.72,37.96],[16.1,37.9],[16.6,38.1],[17.2,38.9],[17.1,39.3],[16.5,39.6],[16.9,40.0],[17.2,40.4],[17.9,40.4],[18.5,40.15],[18.4,40.5],[18.0,40.7],[17.3,40.9],[16.5,41.2],[16.0,41.4],[15.9,41.6],[16.2,41.9],[15.4,42.0],[14.8,42.2],[14.0,42.5],[13.6,43.0],[13.5,43.6],[12.6,44.1],[12.4,45]],
+    [[12.43,37.80],[13.1,38.05],[13.35,38.22],[14.0,38.05],[14.7,38.03],[15.24,38.30],[15.63,38.27],[15.55,38.18],[15.30,37.85],[15.10,37.50],[15.30,37.10],[15.10,36.68],[14.50,36.78],[13.90,37.10],[12.90,37.57]],
     [[8.2,41.1],[9.5,41.2],[9.8,40.9],[9.7,40.5],[9.6,39.5],[9.5,39.1],[9.0,39.2],[8.4,39.1],[8.4,40.0],[8.2,40.6]],
     [[8.6,41.4],[9.5,41.4],[9.5,42.7],[9.3,43.1],[8.7,42.6]],
     [[14.35,35.83],[14.57,35.86],[14.57,35.79],[14.34,35.79]],
@@ -1008,18 +1013,63 @@
   svg.appendChild(sb);
 
   /* 航线 */
-  const ROUTE = [
-    {i:0,k:"real"},{i:1,k:"real"},{m:true,k:"real"},
-    {i:2,k:"myth"},{i:3,k:"myth"},{i:4,k:"myth"},{i:5,k:"myth"},
-    {i:6,k:"myth"},{i:7,k:"myth"},{i:6,k:"myth"},
-    {i:8,k:"myth"},{i:9,k:"myth"},{i:10,k:"myth"},
-    {i:11,k:"gate"},{i:12,k:"real"}
+  /* 航线 —— 不是两点直连。每段给出中继点，走真实可航的海路：
+     出达达尼尔绕英布罗斯、南下爱琴海绕马莱亚角、沿西西里东岸穿墨西拿海峡、
+     绕帕塞罗角、横渡伊奥尼亚海。全部 84 个中继点都按本图海岸线逐点验证过，
+     无一处穿越陆地。复原路线依 Bérard 1927–29 / Bradford 1963 / Severin 1987。 */
+  const LEGS = [
+    {to:0,  k:"real", via:[]},
+    {to:1,  k:"real", via:[[26.10,39.90],[25.85,40.15],[25.60,40.45],[25.52,40.70]]},
+    {to:"M",k:"real", via:[[25.35,40.55],[25.10,39.60],[24.80,38.40],[24.30,37.40],[23.60,36.65]]},
+    {to:2,  k:"myth", via:[[21.80,35.40],[18.50,34.40],[15.00,33.60],[12.20,33.55],[11.20,33.60]]},
+    {to:3,  k:"myth", via:[[11.60,34.10],[13.20,35.40],[14.00,36.20],[14.80,36.45],[15.35,36.70],
+                           [15.42,37.20],[15.28,37.52]]},
+    {to:4,  k:"myth", via:[[15.28,37.55],[15.42,37.90],[15.58,38.12],[15.66,38.24],[15.60,38.36],
+                           [15.35,38.50],[15.15,38.62]]},
+    {to:5,  k:"myth", via:[[14.70,39.40],[14.10,40.30],[13.75,40.95],[13.62,41.12]]},
+    {to:6,  k:"myth", via:[[13.50,41.03],[13.20,41.05],[13.06,41.15]]},
+    {to:7,  k:"myth", via:[[13.00,41.05],[13.20,40.55],[14.20,39.55],[15.10,38.75],[15.45,38.45],
+                           [15.70,38.33],[15.68,38.20],[15.60,38.00],[15.58,37.80],[16.60,37.85],
+                           [18.40,38.50],[19.55,38.95],[20.35,39.15]]},
+    {to:6,  k:"myth", via:[[20.35,39.15],[19.55,38.95],[18.40,38.50],[16.60,37.85],[15.58,37.80],
+                           [15.60,38.00],[15.68,38.20],[15.70,38.33],[15.45,38.45],[15.10,38.75],
+                           [14.20,39.55],[13.20,40.55],[13.00,41.05]]},
+    {to:8,  k:"myth", via:[[13.00,41.05],[13.30,40.45],[14.40,39.35],[15.20,38.70],[15.50,38.42]]},
+    {to:9,  k:"myth", via:[[15.60,38.10],[15.55,37.85],[15.45,37.40],[15.30,36.85],[15.20,36.60],
+                           [14.80,36.60],[14.52,36.72]]},
+    {to:10, k:"myth", via:[[14.52,36.60],[14.45,36.30]]},
+    {to:11, k:"gate", via:[[15.20,36.30],[16.80,37.20],[18.60,38.45],[19.45,39.05],[19.82,39.35]]},
+    {to:12, k:"real", via:[[19.95,39.38],[20.20,39.00],[20.45,38.70],[20.62,38.52]]}
   ];
-  const pts = ROUTE.map(r => r.m ? P(MALEA) : P(S[r.i]));
+
+  /* 折线 → 平滑曲线（Catmull-Rom 转三次贝塞尔），张力压到 1/9，
+     免得曲线在墨西拿海峡这种窄口鼓出去撞上岸 */
+  function smooth(Q, skipM){
+    let d = skipM ? "" : `M${Q[0][0].toFixed(1)} ${Q[0][1].toFixed(1)}`;
+    if(Q.length === 2) return d + ` L${Q[1][0].toFixed(1)} ${Q[1][1].toFixed(1)}`;
+    for(let i=0;i<Q.length-1;i++){
+      const a=Q[i-1]||Q[i], b=Q[i], c=Q[i+1], e=Q[i+2]||Q[i+1];
+      const c1=[b[0]+(c[0]-a[0])/9, b[1]+(c[1]-a[1])/9];
+      const c2=[c[0]-(e[0]-b[0])/9, c[1]-(e[1]-b[1])/9];
+      d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)}`
+         + ` ${c[0].toFixed(1)} ${c[1].toFixed(1)}`;
+    }
+    return d;
+  }
+
+  const pts = [], legRange = [];
+  LEGS.forEach(L => {
+    const s = pts.length ? pts.length - 1 : 0;
+    L.via.forEach(v => pts.push([px(v[0]), py(v[1])]));
+    pts.push(L.to === "M" ? P(MALEA) : P(S[L.to]));
+    legRange.push([s, pts.length - 1]);
+  });
+
   const gRoute = el("g",{});
-  for(let i=0;i<pts.length-1;i++)
-    gRoute.appendChild(el("path",{class:"seg "+ROUTE[i+1].k,
-      d:`M${pts[i][0].toFixed(1)} ${pts[i][1].toFixed(1)} L${pts[i+1][0].toFixed(1)} ${pts[i+1][1].toFixed(1)}`}));
+  const legD = LEGS.map((L,li) =>
+    li ? smooth(pts.slice(legRange[li][0], legRange[li][1]+1)) : "");
+  for(let li=1; li<LEGS.length; li++)
+    gRoute.appendChild(el("path",{class:"seg "+LEGS[li].k, d:legD[li]}));
   svg.appendChild(gRoute);
 
   /* 马莱亚角 —— 全图唯一纯黑线 */
@@ -1033,9 +1083,10 @@
   const z2=el("text",{class:"zone-tag", x:mp[0]-120, y:mp[1]+54}); z2.textContent="神话地理";
   gM.appendChild(z1); gM.appendChild(z2); svg.appendChild(gM);
 
-  /* 航迹动画层 */
+  /* 航迹动画层 —— 与上面的分段曲线用同一套平滑，两者严格重合 */
   const trail = el("path",{class:"trail",
-    d: pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ")});
+    d: `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`
+       + LEGS.map((L,li)=> li ? smooth(pts.slice(legRange[li][0], legRange[li][1]+1), true) : "").join("")});
   svg.appendChild(trail);
   const TL = trail.getTotalLength();
   trail.style.strokeDasharray = TL; trail.style.strokeDashoffset = TL;
@@ -1045,11 +1096,19 @@
   ship.appendChild(el("circle",{r:3.6, fill:"var(--accent)", stroke:"var(--sea)", "stroke-width":1.2}));
   svg.appendChild(ship);
 
-  const arriveAt = {0:0}; let acc = 0;
-  for(let i=1;i<pts.length;i++){
-    acc += Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]);
-    const r = ROUTE[i];
-    if(!r.m && arriveAt[r.i]===undefined) arriveAt[r.i]=acc;
+  /* 每一站在航迹上的到达长度 —— 按平滑后的实际曲线量，不是折线累加 */
+  const arriveAt = {0:0};
+  {
+    const probe = el("path",{fill:"none", stroke:"none"});
+    svg.appendChild(probe);
+    let acc = 0;
+    for(let li=1; li<LEGS.length; li++){
+      probe.setAttribute("d", legD[li]);
+      acc += probe.getTotalLength();
+      const to = LEGS[li].to;
+      if(to !== "M" && arriveAt[to] === undefined) arriveAt[to] = acc;
+    }
+    probe.remove();
   }
 
   /* 站点 */
@@ -1095,6 +1154,7 @@
   let   view  = FULL.slice();
   let   zoomI = null;                          // null = 全图
   let   zraf  = null;
+  let   mapK  = 1;                             // 当前缩放系数，船的标记要用
 
   function stationView(i){
     const [x, y] = NXY[i];
@@ -1111,6 +1171,10 @@
       `translate(${NXY[i][0].toFixed(1)},${NXY[i][1].toFixed(1)}) scale(${ks})`));
     cityG.forEach(c => c.g.setAttribute("transform",
       `translate(${c.x.toFixed(1)},${c.y.toFixed(1)}) scale(${ks})`));
+
+    // 航迹靠 dasharray 做动画，不能用 non-scaling-stroke，只能手动换算线宽
+    mapK = k;
+    trail.style.strokeWidth = (2.6 * k).toFixed(2);
 
     const km = k < .99 ? 100 : 200, L = (km/111)*K;
     sbPath.setAttribute("d", `M0 6 L0 0 L${L.toFixed(1)} 0 L${L.toFixed(1)} 6`);
@@ -1151,6 +1215,7 @@
              view[1] + (e.clientY - r.top ) / r.height * view[3] ];
   }
   svg.addEventListener("click", e => {
+    if(dragged > 4) return;                                     // 刚拖过图，不当作选站
     if(e.target.closest && e.target.closest(".node")) return;   // 点在站点上，交给它自己的处理
     const [x, y] = svgPoint(e);
     let best = -1, bd = Infinity;
@@ -1161,6 +1226,38 @@
     });
     if(best >= 0 && bd < view[2] * .085 && (best !== cur || proofOnly)) select(best);
   });
+  /* 拖动移图 —— 放大之后才有可动的余量，全图时会被夹回原位 */
+  const clampView = v => [ Math.max(0, Math.min(W - v[2], v[0])),
+                           Math.max(0, Math.min(H - v[3], v[1])), v[2], v[3] ];
+  let drag = null, dragged = 0;
+  svg.addEventListener("pointerdown", e => {
+    if(e.button) return;
+    drag = { x:e.clientX, y:e.clientY, v:view.slice() };
+    dragged = 0;
+    if(svg.setPointerCapture) svg.setPointerCapture(e.pointerId);
+  });
+  svg.addEventListener("pointermove", e => {
+    if(!drag) return;
+    const r = svg.getBoundingClientRect();
+    dragged = Math.max(dragged, Math.hypot(e.clientX-drag.x, e.clientY-drag.y));
+    if(zraf) cancelAnimationFrame(zraf);
+    paint(clampView([ drag.v[0] - (e.clientX-drag.x)/r.width  * drag.v[2],
+                      drag.v[1] - (e.clientY-drag.y)/r.height * drag.v[3],
+                      drag.v[2], drag.v[3] ]));
+    svg.classList.add("grabbing");
+  });
+  const dragEnd = e => {
+    if(!drag) return;
+    drag = null; svg.classList.remove("grabbing");
+    if(svg.releasePointerCapture && e.pointerId !== undefined){
+      try{ svg.releasePointerCapture(e.pointerId); }catch(_){}
+    }
+    setTimeout(()=>{ dragged = 0; }, 0);   // 让紧随其后的 click 还能读到
+  };
+  svg.addEventListener("pointerup", dragEnd);
+  svg.addEventListener("pointercancel", dragEnd);
+  svg.addEventListener("pointerleave", dragEnd);
+
   document.getElementById("zoomout").addEventListener("click", zoomOut);
   paint(view);   // 初始化比例尺与各图层的缩放系数
 
@@ -1288,7 +1385,7 @@
       const p = Math.min((now-t0)/DUR, 1), d = p*TL;
       trail.style.strokeDashoffset = TL-d;
       const pt = trail.getPointAtLength(d);
-      ship.setAttribute("transform",`translate(${pt.x},${pt.y})`);
+      ship.setAttribute("transform",`translate(${pt.x},${pt.y}) scale(${mapK.toFixed(3)})`);
       for(const k in arriveAt){
         const i=+k;
         if(!lit.has(i) && d >= arriveAt[i]-1){ lit.add(i); nodes[i].classList.remove("unlit"); select(i); }
