@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8"><body style="font:12px monospace;white-space:pre"><div id="out">start</div>
+<script>
+const O=document.getElementById('out'),L=[],P=x=>{L.push(x);O.textContent=L.join('\n');};
+const f=document.createElement('iframe');
+f.style.cssText='width:1400px;height:860px;border:0;position:absolute;left:0;top:0';
+f.src='./index.html?debug=1'; document.body.appendChild(f);
+f.onload=()=>setTimeout(()=>{try{run()}catch(e){P('ERR '+e.message)}},4500);
+function run(){
+ const w=f.contentWindow,d=f.contentDocument;
+ if(w.__odyssey) w.__odyssey.tl.time(14.6);
+ const svg=d.querySelector('#map');
+ const lands=[...svg.querySelectorAll('.land')];
+ const pt=svg.createSVGPoint();
+ const onLand=(x,y)=>{pt.x=x;pt.y=y;return lands.some(p=>{try{return p.isPointInFill(pt)}catch(e){return false}})};
+ P('=== 城市是否落在陆地上 (isPointInFill) ===');
+ let ok=0,bad=[];
+ [...svg.querySelectorAll('.town')].forEach((c,i)=>{
+   const x=+c.getAttribute('cx'),y=+c.getAttribute('cy');
+   const nm=(c.nextSibling&&c.nextSibling.textContent)||('#'+i);
+   if(onLand(x,y)) ok++; else bad.push(nm);
+ });
+ P('  陆上 '+ok+' / 落海 '+bad.length+(bad.length?'  → '+bad.join(', '):''));
+ P('');P('=== 山链是否在陆地上（抽样脊点）===');
+ let mo=0,mb=0;
+ [...svg.querySelectorAll('.carto__range')].forEach(g=>{
+   const ms=[...g.querySelectorAll('.mtn')];
+   ms.forEach((m,i)=>{ if(i%4)return;
+     const tr=m.parentNode.getAttribute('transform')||'';
+     const mm=/translate\(([-\d.]+),([-\d.]+)\)/.exec(tr); if(!mm)return;
+     if(onLand(+mm[1],+mm[2])) mo++; else mb++;
+   });
+ });
+ P('  抽样 陆上='+mo+'  海上='+mb);
+ P('');P('=== 投影自检 ===');
+ const vb=svg.getAttribute('viewBox');
+ P('  viewBox='+vb);
+ const at=[...svg.querySelectorAll('.cityname')].find(t=>t.textContent==='ATHENAE');
+ P('  ATHENAE 标签 x='+(at?at.getAttribute('x'):'?')+' y='+(at?at.getAttribute('y'):'?'));
+}
+</script>

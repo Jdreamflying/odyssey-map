@@ -1,0 +1,964 @@
+/* ═══════════════════════════════════════════════════════════
+   Map V3 —— 古典制图版
+   古希腊地理观 + 15–17 世纪地中海波特兰海图 + 17–18 世纪铜版地图
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 层序：羊皮纸 → 世界地图 → Landmark 水印 → 海图 → 笔记本 → 节点 ── */
+.omap .omap__mount { position: absolute; inset: 0; z-index: 3; }
+.omap .landmark-stage { z-index: 2; }
+.omap .map-cartouche-slot { z-index: 5; }
+
+/* 顶栏取消 —— 题记已接管，不再横占一条 */
+.omap .mapheader { display: none; }
+.omap #stage { top: 0; }
+
+/* ── 左上小型题记 ────────────────────────────────────────
+   不是 header card，是刻在图上的题名。地图从它旁边和下面延伸。 */
+.omap .map-cartouche-slot {
+  position: absolute;
+  left: clamp(16px, 2.6vw, 38px);
+  top: clamp(12px, 1.8vh, 22px);
+  width: clamp(280px, 26vw, 360px);
+  pointer-events: none;
+}
+
+.omap .cartouche {
+  position: static;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 0 9px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid rgba(36, 26, 13, 0.28);
+  box-shadow: none;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.omap .cartouche .cb-l, .omap .cartouche .cb-r { display: none; }
+
+.omap .cartouche .eyebrow {
+  font-family: var(--label);
+  font-size: 0.52rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+
+.omap .cartouche h1 {
+  margin: 0;
+  font-family: var(--serif-cn);
+  font-weight: 900;
+  font-size: clamp(0.95rem, 1.5vw, 1.16rem);
+  letter-spacing: 0.08em;
+  line-height: 1.3;
+  color: var(--ink);
+}
+
+.omap .cartouche h1 .lat {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--serif-gr);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.omap .cartouche .ledger {
+  margin-top: 7px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  font-family: var(--label);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+  color: var(--ink-faint);
+}
+
+.omap .cartouche .ledger b { color: var(--ink); font-weight: 400; }
+.omap .cartouche .ledger .zero b { color: var(--sepia); }
+
+/* ── Landmark 固定舞台 ───────────────────────────────────
+   所有站共用，统一尺寸与透明度。夹在羊皮纸与信息内容之间：
+   海图线条与笔记本文字都压在它上面。 */
+.omap .landmark-stage {
+  position: absolute;
+  /* 移到地图与笔记本的交界带：覆盖右半地图，但不进入笔记本文字区。
+     高度按 88vh 铺满，宽度由图片比例决定（object-fit: contain）。
+     left 是插画的**中心**（配合下面的 translate(-50%,0)）。
+     58% → 62%：整体右移约 4% 视口宽，落到海图与笔记本的交界带上。 */
+  left: 62%;
+  top: 3vh;
+  width: min(70vw, 1280px);
+  height: 94vh;
+  /* 再放大 15%（本轮第二次）：上一轮已是 √1.15 = 1.0724，
+     这一轮再乘 √1.15，合计线性 1.15、面积为最初的 1.3225 倍。
+     scale 以元素自身中心为原点，而 translate(-50%,0) 已经把中心摆在
+     left 上，所以放大不会让它跑位 —— 中心始终在 62% 处。
+     用 transform 放大而不是改 width/height —— 那两个值还要参与
+     object-fit: contain 的比例计算，改了插画会被重新裁切。
+
+     +1cm：整组插画再向右挪一个厘米（CSS 里 1cm = 37.8px），更贴笔记本一侧。
+     加在 translate 上而不是改 left —— 矩阵是 T·S，平移量不参与后面的 1.15
+     缩放，所以位移就是**正好 1cm**，不是 1.15cm。
+     平板档（901–1180px）在下面把这 1cm 撤掉：那一档舞台中心本来就在 66%，
+     再加 1cm 会把宽横构图的右缘顶出屏幕。
+
+     数值走 CSS 变量，是为了 ?tune 调参面板能实时改它；变量没被设置时
+     取括号里的默认值 —— 也就是线上看到的那一版。 */
+  transform:
+    translate(calc(-50% + var(--lm-shift-x, 1cm)), var(--lm-shift-y, 0px))
+    scale(var(--lm-stage-scale, 1.15));
+  transform-origin: center center;
+  pointer-events: none;
+}
+
+.omap .landmark {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  visibility: hidden;
+  will-change: opacity, transform, filter;
+}
+
+.omap .landmark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  /* 渗进羊皮纸：去彩、压暗、乘算，不留任何图片边界 */
+  filter: sepia(0.42) contrast(1.02) saturate(0.5) brightness(1.04);
+  mix-blend-mode: multiply;
+}
+
+/* ── 波特兰恒向线网 ────────────────────────────────────
+   真实构造：隐形圆 + 圆周 16 朵风玫瑰，各射 16 线。
+   史料记载主风黑 / 半风绿 / 四分风红 —— 保留三级差异但压到极淡。 */
+.omap .carto { pointer-events: none; }
+
+.omap .carto__hidden-circle {
+  stroke: rgba(36, 26, 13, 0.07);
+  stroke-width: 0.5;
+  opacity: 1;
+}
+
+.omap .rl { fill: none; opacity: 1; }
+.omap .rl--main { stroke: rgba(36, 26, 13, 0.115); stroke-width: 0.5; }
+.omap .rl--half { stroke: rgba(62, 107, 92, 0.10); stroke-width: 0.4; }
+.omap .rl--quarter { stroke: rgba(138, 90, 48, 0.06); stroke-width: 0.32; }
+
+.omap .carto__nexus {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.22);
+  stroke-width: 0.5;
+  opacity: 1;
+}
+
+/* ── 欧式风玫瑰 ── */
+.omap .carto__rose { opacity: 0.62; }
+.omap .rose__ring { fill: none; stroke: rgba(36, 26, 13, 0.42); stroke-width: 0.8; }
+.omap .rose__ring--thin { stroke: rgba(36, 26, 13, 0.28); stroke-width: 0.45; }
+.omap .rose__tick { stroke: rgba(36, 26, 13, 0.36); stroke-width: 0.5; }
+.omap .rose__blade { stroke: rgba(36, 26, 13, 0.45); stroke-width: 0.35; }
+.omap .rose__blade--dark { fill: rgba(36, 26, 13, 0.42); }
+.omap .rose__blade--light { fill: rgba(240, 230, 205, 0.5); }
+.omap .rose__blade--half { fill: rgba(36, 26, 13, 0.16); stroke-width: 0.3; }
+.omap .rose__fleur { fill: rgba(36, 26, 13, 0.5); stroke: rgba(36, 26, 13, 0.5); stroke-width: 0.4; }
+
+/* ── 海岸排线 / 海面点刻 / 波纹 ── */
+.omap .carto__coast { opacity: 0.55; }
+.omap .carto__stipple { opacity: 0.4; }
+.omap .carto__waves { opacity: 0.5; }
+.omap .wv { fill: none; stroke: rgba(36, 26, 13, 0.14); stroke-width: 0.5; }
+
+/* ── 陆地纹理：糖块山 · 河流 · 聚落 ── */
+.omap .carto__land { opacity: 0.62; }
+.omap .mtn { fill: rgba(240, 230, 205, 0.28); stroke: rgba(36, 26, 13, 0.42); stroke-width: 0.5; }
+.omap .mtn__shade { fill: rgba(36, 26, 13, 0.2); stroke: none; }
+.omap .river { fill: none; stroke: rgba(36, 26, 13, 0.3); stroke-width: 0.55; }
+.omap .town { fill: none; stroke: rgba(36, 26, 13, 0.42); stroke-width: 0.5; }
+
+/* ── 古典地名 ── */
+.omap .carto__names { opacity: 0.5; }
+.omap .cname { font-family: var(--serif-gr); fill: rgba(36, 26, 13, 0.62); }
+.omap .cname--sea { font-style: italic; fill: rgba(36, 26, 13, 0.4); }
+.omap .cname--land { fill: rgba(36, 26, 13, 0.5); }
+
+/* ── 航线：陈年群青墨，不是电子蓝 ── */
+.omap { --indigo: #3c4a6b; }
+
+.omap .trail {
+  stroke: var(--indigo);
+  stroke-width: 2.2;
+  opacity: 0.72;
+}
+
+.omap .seg.real { stroke: rgba(60, 74, 107, 0.6); stroke-width: 1.5; }
+.omap .node .selring { stroke: var(--indigo); }
+.omap .node:hover .lbl { fill: var(--indigo); }
+
+/* ── 左下图例：刻上去的墨字，不是网页按钮 ── */
+.omap .legendbox {
+  background: none;
+  border: 0;
+  padding: 6px 10px 8px 0;
+}
+
+.omap .plaque {
+  border: 0;
+  background: none;
+  padding: 3px 0;
+  margin-right: 16px;
+  font-family: var(--serif-cn);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  border-bottom: 1px solid transparent;
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.omap .plaque:hover { color: var(--ink); border-bottom-color: rgba(36, 26, 13, 0.45); }
+.omap .plaque[aria-pressed='false'] { color: var(--ink-faint); opacity: 0.55; }
+.omap .plaque[aria-pressed='true'] { border-bottom-color: rgba(36, 26, 13, 0.32); }
+
+.omap .plaque .dot {
+  width: 6px;
+  height: 6px;
+  border: 1px solid currentColor;
+  background: none;
+}
+
+.omap .plaque[aria-pressed='true'] .dot { background: currentColor; }
+
+/* ── 右侧折角索引签：从纸边露出的纸质签 ── */
+.omap #tabs { right: 0; gap: 6px; }
+
+/* ⚠ 裁字的原因不是宽度，是 transform。
+   上一版靠 translateX(26%) 把纸签「推出纸边」来做立体感，而 #tabs 已经
+   right:0 贴住纸的右缘，于是每个签有自身宽度 26%（本机约 26px）跑到
+   #paper 之外，被 #paper 的 overflow:hidden 切掉 —— 表现就是每行中文
+   最后一两个字缺角。hover 时 transform 收到 4%，字又基本回来了，所以
+   只在静止状态看得见。
+   现在改为：静止就贴齐纸边（不位移），纸质感交给左边框 + 折角 + 投影，
+   hover 往左「抽出」一点。字永远在纸内。 */
+.omap .foldtab {
+  position: relative;
+  border: 0;
+  border-left: 1px solid rgba(36, 26, 13, 0.28);
+  border-radius: 3px 0 0 3px;
+  background: linear-gradient(90deg, rgba(216, 198, 159, 0.85), rgba(240, 230, 205, 0.72));
+  width: auto;
+  min-width: 6.5em;
+  padding: 11px 14px 11px 16px;
+  font-family: var(--serif-cn);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: clip;
+  color: var(--ink-soft);
+  box-shadow: -2px 1px 5px rgba(36, 26, 13, 0.16);
+  transform: none;
+  transition: transform 0.45s cubic-bezier(0.22, 0.9, 0.3, 1), color 0.3s ease;
+}
+
+/* 往左抽出，而不是往纸外推 —— 保证任何状态下都不越过纸的右缘 */
+.omap .foldtab:hover { transform: translateX(-5%); color: var(--ink); }
+
+.omap .foldtab::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  border-width: 0 7px 7px 0;
+  border-style: solid;
+  border-color: transparent rgba(200, 177, 131, 0.9) transparent transparent;
+}
+
+/* ── 笔记本 ── */
+/* 那个看不出意义的小版画标志：删除 */
+.omap .note__plate { display: none; }
+
+.omap .note__sec { margin-top: 26px; padding-top: 17px; }
+.omap .note__body { font-size: 0.86rem; line-height: 2.05; }
+.omap .note__lede { line-height: 1.95; }
+
+/* ── 海图边缘墨迹渐淡 ──────────────────────────────────
+   ⚠ 教训：mask-image 会连带吃掉命中测试 —— 被遮掉的区域点不中。
+   前两版把遮罩加在 #chart 上，桌面尺寸下 14 个节点只有 3 个可点、
+   四个图例铜牌全部失效（移动端因为 mask:none 反而是好的）。
+   现在改为：SVG 不带任何遮罩，边缘渐隐交给一层纸色覆盖，
+   该层 pointer-events:none，视觉照旧，交互不受影响。 */
+.omap #chart {
+  -webkit-mask-image: none;
+  mask-image: none;
+  position: relative;
+}
+
+/* ⚠ 这里曾经有一层 #chart::after 的纸色渐隐带：
+     linear-gradient(90deg, transparent 82%, rgba(230,215,182,.7) 100%)
+   它是「左右两张纸」观感的唯一来源，必须留着这段说明防止再犯 ——
+   #chart 只占栅格左栏，这层平涂纸色只能画到 #chart 的右边界（本机
+   2048 宽下 x=1301）就硬生生断掉，而它的颜色是死值 #e6d7b6，与底下
+   那张带扫描纹理的羊皮纸不同调。两件事叠起来，就在地图与笔记本之间
+   留下一道竖直接缝。
+   羊皮纸只有一张（.CinemaSheet--map 里的单个 <Parchment variant="map">），
+   地图与笔记本都印在它上面；任何只覆盖单侧栏的纸色层都会重新造出接缝，
+   一律不要加。海图靠近装订线时若需要收墨，改动 SVG 自身的 opacity，
+   不要在上面盖纸色。 */
+
+@media (max-width: 900px) {
+  .omap .landmark-stage { display: none; }
+  .omap .map-cartouche-slot { position: static; width: auto; padding: 10px 16px 0; }
+}
+
+/* ═══ V4：陆地由实心块改为透明墨渍 ═══
+   羊皮纸必须能明显透过陆地。陆地的存在感改由海岸线、排线、
+   山链、河流、城市与地名建立，不再靠不透明色块。 */
+.omap .land {
+  fill: rgba(120, 95, 52, 0.11);
+  stroke: rgba(36, 26, 13, 0.62);
+  stroke-width: 0.9;
+}
+
+/* 内陆排线：陆地一侧 */
+.omap .carto__inland { opacity: 0.42; }
+
+/* 城市名：小号斜体衬线 */
+.omap .cityname {
+  font-family: var(--serif-gr);
+  font-style: italic;
+  fill: rgba(36, 26, 13, 0.5);
+  opacity: 1;
+}
+
+/* ═══ V4：航线三种线型即证据分级 ═══
+   real   文本明确的航程关系
+   myth   现代地点属后世推测
+   gate   过渡段
+   drift  被风吹回 / 船毁后的残骸漂流 —— 只剩一人，必须与船队线区分 */
+.omap .seg.drift {
+  stroke: rgba(96, 104, 128, 0.72);
+  stroke-width: 1.15;
+  stroke-dasharray: 1.6 3.4;
+  stroke-linecap: round;
+}
+
+/* ═══ V4：刻线年表 —— 取代现代条纹进度条 ═══ */
+.omap .chron-bar {
+  height: 22px;
+  gap: 0;
+  border-top: 0;
+  border-bottom: 0;
+  padding: 0;
+  align-items: flex-end;
+  /* 一道贯穿的墨基线，段落刻痕落在其上 */
+  background: linear-gradient(0deg, rgba(36, 26, 13, 0.34) 0 1px, transparent 1px);
+}
+
+.omap .chron-seg {
+  border: 0;
+  background: none;
+  height: 100%;
+  position: relative;
+  cursor: pointer;
+}
+
+/* 段界：竖向刻度，像比例尺的分划 */
+.omap .chron-seg::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 1px;
+  height: 9px;
+  background: rgba(36, 26, 13, 0.42);
+}
+
+.omap .chron-seg:hover::before { height: 13px; background: var(--ink); }
+
+.omap .chron-head h3 {
+  font-family: var(--serif-cn);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.omap .chron-ends {
+  font-family: var(--label);
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* 「怎么读这张图」里的航线说明 */
+.omap .how-route { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid rgba(36,26,13,.16); }
+.omap .how-route h4 {
+  margin: 0 0 9px; font-family: var(--label); font-weight: 400;
+  font-size: .6rem; letter-spacing: .28em; text-transform: uppercase; color: var(--sepia);
+}
+.omap .how-route p { margin: 0 0 9px; font-size: .82rem; line-height: 1.95; color: var(--ink-soft); }
+.omap .how-route b { color: var(--ink); font-weight: 700; }
+.omap .how-route em { font-style: normal; color: var(--ink); }
+
+/* ═══ V5 ═══════════════════════════════════════════════════ */
+
+/* 马莱亚角：细刻引线 + 空心岬标，不再是纯黑直线 */
+.omap .malea-line {
+  stroke: rgba(36, 26, 13, 0.5);
+  stroke-width: 0.7;
+  stroke-dasharray: 5 3;
+}
+.omap .malea-dot { fill: none; stroke: rgba(36, 26, 13, 0.62); stroke-width: 0.9; }
+
+/* ── 陆地再降：羊皮纸必须明显透出 ── */
+.omap .land { fill: rgba(120, 95, 52, 0.085); }
+
+/* ── 文字三级层级 ── */
+.omap .cname--sea { opacity: 0.9; fill: rgba(36,26,13,.82); }   /* 一级 海域 */
+.omap .cname--land { opacity: 0.8; fill: rgba(36,26,13,.74); }   /* 一级 大陆 */
+.omap .carto__names { opacity: 1; }
+.omap .cityname { opacity: 0.5;  fill: rgba(36,26,13,.6); }    /* 二级 城市 */
+.omap .city text { opacity: 0.48; }
+.omap .carto__rhumb, .omap .carto__waves, .omap .carto__stipple { opacity: 0.26; }                              /* 三级 装饰 */
+.omap .carto__rose { opacity: 0.44; }
+
+/* ── 航线：手绘墨感 —— 起笔重、收笔淡、局部断墨 ── */
+.omap .trail {
+  stroke: var(--indigo);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  opacity: 0.78;
+  filter: url(#inkJitter);
+}
+.omap .seg { filter: url(#inkJitter); }
+.omap .seg.real { stroke: rgba(52, 66, 100, .72); stroke-width: 1.7; }
+.omap .seg.myth { stroke: rgba(60, 74, 107, .5);  stroke-width: 1.45; stroke-dasharray: 3.2 3.4; }
+.omap .seg.gate { stroke: rgba(60, 74, 107, .5);  stroke-width: 1.45; stroke-dasharray: 8 4; }
+
+/* 选中时像制图师重新加墨 */
+.omap .node.sel .ring { stroke: var(--indigo); stroke-width: 2; }
+.omap .node.sel .core { stroke: var(--indigo); }
+.omap .node.sel .lbl { fill: var(--indigo); font-weight: 700; }
+
+/* ═══ V5 响应式：三档布局 ═══
+   此前窗口缩小后 #stage 的 grid 固定两列、外层 overflow:hidden，
+   笔记本被挤没且无法滚动。改为按宽度切换布局，并放开纵向滚动。 */
+
+/* Desktop：地图 65% / 笔记本 35% */
+@media (min-width: 1181px) {
+  .omap #stage { grid-template-columns: 65fr 35fr; }
+}
+
+/* Tablet：地图 55% / 笔记本 45% */
+@media (min-width: 901px) and (max-width: 1180px) {
+  .omap #stage { grid-template-columns: 55fr 45fr; }
+  /* 舞台中心已经在 66%，右边只剩 34vw；基础规则里那 1cm 在这一档会把
+     宽横构图（特洛伊 / 伊斯马罗斯 / 特里纳基亚）的右缘顶出屏幕，撤掉。 */
+  .omap .landmark-stage {
+    left: 66%; width: min(70vw, 900px); height: 76vh;
+    transform:
+      translate(calc(-50% + var(--lm-shift-x-tablet, 0cm)), var(--lm-shift-y, 0px))
+      scale(var(--lm-stage-scale, 1.15));
+  }
+  .omap .map-cartouche-slot { width: clamp(240px, 30vw, 300px); }
+}
+
+/* Mobile：纵向堆叠 —— 题记 / 地图 / 插画 / 笔记本，整页可滚动 */
+@media (max-width: 900px) {
+  .omap #paper { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; }
+  .omap #stage {
+    position: relative;
+    inset: auto;
+    display: block;
+    height: auto;
+    padding: 0 14px 40px;
+  }
+  .omap .map-cartouche-slot {
+    position: relative;
+    left: auto; top: auto;
+    width: auto;
+    padding: 14px 0 4px;
+  }
+  .omap #chart {
+    position: relative;
+    height: 52vh;
+    min-height: 300px;
+  }
+  .omap #chart::after { display: none; }
+  .omap #notebook {
+    position: relative;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding-top: 18px;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+  .omap .nb-body { overflow: visible; max-height: none; }
+  .omap #chron { position: relative; padding: 14px 0 0; }
+  .omap .legendbox { position: relative; left: auto; bottom: auto; }
+  .omap #tabs { position: relative; right: auto; flex-direction: row; flex-wrap: wrap; margin: 18px 0 0; }
+  .omap .foldtab { transform: none; border-radius: 3px; }
+  .omap .foldtab:hover { transform: none; }
+  /* 插画在移动端作为地图下方的独立一段，不再是水印 */
+  .omap .landmark-stage {
+    position: relative;
+    left: auto; top: auto;
+    transform: none;
+    width: 100%;
+    height: 40vh;
+    margin: 10px 0 4px;
+  }
+  .omap .landmark img { filter: sepia(.38) contrast(1.04) saturate(.55); }
+}
+
+/* ── Landmark：不是浮在纸上的插画，是**从纸背透出来**的铜版画 ──
+   三件事把它压进纸里：
+     opacity  再降一档（与 LandmarkLayer 里数据给的 autoAlpha 相乘）
+     blur     极轻的一点点 —— 纸纤维会散射透过来的墨，边缘不可能全锐
+     饱和度   继续压，只剩纸的暖褐
+   注意 blur 加在 img 上而不是 figure 上：GSAP 切换插画时会给 figure
+   写 inline filter: blur(9px)→blur(0px)，写在 figure 上会被它覆盖。 */
+.omap .landmark img {
+  /* brightness 1.08 → 1.026：墨色再加深 5%（1.08 ÷ 1.05）。
+     加深走 brightness 而不是 contrast —— contrast 会同时把高光推白，
+     羊皮纸上会浮出一层灰底；压 brightness 只让暗部更沉，纸面不动。
+
+     三个数走 CSS 变量，供 ?tune 面板实时改；不设变量时就是这里的默认值。 */
+  filter:
+    sepia(0.54) contrast(0.92) saturate(0.32)
+    brightness(var(--lm-brightness, 1.026))
+    blur(var(--lm-blur, 0.7px));
+  opacity: var(--lm-veil, 0.86);
+  mix-blend-mode: multiply;
+}
+
+/* ── 笔记本：手稿感 ── */
+.omap #notebook { position: relative; }
+
+/* 页边线 */
+.omap #notebook::before {
+  content: '';
+  position: absolute;
+  left: -14px; top: 6%; bottom: 6%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(138,90,48,.34) 12%, rgba(138,90,48,.34) 88%, transparent);
+}
+
+/* 页码 */
+.omap .nb-head .n {
+  font-family: var(--serif-gr);
+  font-style: italic;
+  font-size: .82rem;
+  color: var(--sepia);
+}
+
+.omap .nb-head .t {
+  font-family: var(--label);
+  font-size: .56rem;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* 分节标签前的手写刻痕 */
+.omap .note__label::before {
+  content: '※ ';
+  color: var(--ink-faint);
+  letter-spacing: 0;
+}
+
+/* 证据等级像一枚小印章 */
+.omap .note__ev {
+  border: 1px solid currentColor;
+  border-bottom-width: 1px;
+  padding: 2px 7px;
+  border-radius: 1px;
+  transform: rotate(-1.2deg);
+}
+
+/* ═══ 取景：地图整体下移，为左上题记让出空间 ═══
+   之前是把题记塞进地图上方、地图被压扁；现在反过来 ——
+   地图从题记下方开始，题记占据顶部真实空白。 */
+@media (min-width: 901px) {
+  .omap #chart { padding-top: clamp(96px, 13vh, 132px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   V5 铜版刻线层
+   ═══════════════════════════════════════════════════════════════
+   几何全部由 map/pen.js + coastPen / reliefPen / seaPen 生成，
+   这里只管墨色与显现节奏。
+
+   ⚠ 以下 V4 时代的选择器**已成死码**，DOM 里不再有对应元素，
+   改它们不会有任何效果（已实测确认命中数为 0）。要调对应效果请改
+   右列的新类：
+       .land           → .cst__land / .cst__ink*
+       .carto__coast   → .cst__hach--in / --out
+       .carto__inland     （内陆排线整套取消，改为山地排线）
+       .carto__land       （同上）
+       .mtn .mtn__shade → .rlf__shade / .rlf__lit / .rlf__crest / .rlf__peak
+       .river          → .rlf__river
+       .town .cityname → .twn__anchor / .twn__wall / .twn__name
+       .carto__waves   → .sea__wave
+       .carto__names   → .sea__names（.cname 仍在用）
+   还活着的 V4 选择器：.carto__stipple / .carto__rhumb / .rl /
+   .carto__rose / .rose__* / .cname*，以及 bootMap 自己的
+   .node / .seg / .trail / .grat / .city / .rose / .scalebar。
+
+   两条规矩：
+   ① **一律常量透明度，不做任何显现动画。**
+      早先这一层的每个元素都乘一个 --rv-* 变量，由主时间轴在卷起过程中
+      从 0 补到 1，做分阶段浮现。那五条补间每帧都在改整层 opacity，
+      而这一层是 7250 顶点的海岸线加两层排线 —— 每帧重新栅格化，
+      卷纸动画同时还在跑 clip-path，两件重活撞一起只剩 6 FPS。
+      现在地图始终是静态的，卷轴只是盖在上面的一张纸，纸走了就露出来。
+      变量已全部折算成常量，OdysseyMap 也不再向时间轴注册地图图层。
+   ② 一律 fill:none + 半透明深褐描边 —— 深色压在浅纸上，
+      等效于 multiply，不必真的开混合模式（几千个节点开 blend 太贵）。 */
+
+/* ⚠ 这里原本是 mix-blend-mode: multiply，已撤。
+   混合模式会让这三个层组各自成为独立的合成层、并且必须与背景反复混合，
+   实测在影片阶段把帧率从 4.6 拖到 3.6 FPS，卷起过程也跟着掉帧。
+   而本层所有墨色都是「半透明深褐压在浅羊皮纸上」—— 深色叠浅底的结果
+   与 multiply 几乎一致，混合模式本来就没带来多少收益。
+   要融入纸张靠的是墨色本身够淡、不是靠混合模式。 */
+.omap .carto,
+.omap .cartoland,
+.omap .carto-top { mix-blend-mode: normal; }
+
+/* 显现动画已经取消，这些层的 opacity 不再变化，
+   原来挂在它们身上的 will-change: opacity 只剩内存开销，已撤。 */
+
+/* ── 陆地本体 ────────────────────────────────────────────────
+   纸必须能明显透过陆地：陆地的存在感由岸线、排线、山脉、地名建立，
+   不靠不透明色块。 */
+.omap .cst__land {
+  fill: rgba(122, 96, 52, 0.10);
+  stroke: none;
+  opacity: 1;
+}
+
+/* ── 岸线主墨线：三遍叠画做出粗细不匀 ────────────────────────
+   SVG 的 stroke-width 是均匀的，单独一条线永远像机器画的。
+   三遍不同噪声种子大部分重合、局部分岔，交叠处自然变粗。 */
+.omap .cst__ink {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 1;
+}
+.omap .cst__ink--a { stroke: rgba(36, 26, 13, 0.62); stroke-width: 0.62; }
+.omap .cst__ink--b { stroke: rgba(36, 26, 13, 0.34); stroke-width: 0.36; }
+.omap .cst__ink--c { stroke: rgba(58, 42, 20, 0.20); stroke-width: 1.05; }
+
+/* ── 海侧排线：垂直于岸的短线，向海两排后消失 ────────────── */
+.omap .cst__hach {
+  fill: none;
+  stroke-linecap: round;
+}
+.omap .cst__hach--in {
+  stroke: rgba(36, 26, 13, 0.30);
+  stroke-width: 0.34;
+  opacity: 0.9;
+}
+.omap .cst__hach--out {
+  stroke: rgba(36, 26, 13, 0.19);
+  stroke-width: 0.3;
+  opacity: 0.72;
+}
+
+/* ── 海湾双线：内凹岸段的内平行线 ───────────────────────────
+   航海图标注可泊水域的习惯，也是「岸线不是一条均匀黑线」最直观的证据。 */
+.omap .cst__bay {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.26);
+  stroke-width: 0.3;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+
+/* ── 墨积：岬角尖端的小墨团 ─────────────────────────────── */
+.omap .cst__blot circle {
+  fill: rgba(36, 26, 13, 0.34);
+  stroke: none;
+}
+.omap .cst__blot { opacity: 0.8; }
+
+/* ── 山脉排线 ────────────────────────────────────────────────
+   背光侧长而密、受光侧短而疏 —— 光自左上，与影片和 landmark 一致。 */
+.omap .rlf { opacity: 1; }
+.omap .rlf__shade {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.46);
+  stroke-width: 0.30;
+  stroke-linecap: round;
+}
+.omap .rlf__lit {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.26);
+  stroke-width: 0.28;
+  stroke-linecap: round;
+}
+.omap .rlf__crest {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.42);
+  stroke-width: 0.34;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.omap .rlf__peak {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.7);
+  stroke-width: 0.5;
+  stroke-linejoin: round;
+}
+
+/* ── 河流：真实河道，下游叠一层变粗 ─────────────────────── */
+.omap .rlf__rivers { opacity: 0.92; }
+.omap .rlf__river {
+  fill: none;
+  stroke: rgba(62, 78, 96, 0.42);
+  stroke-width: 0.42;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.omap .rlf__river--mouth { stroke-width: 0.72; stroke: rgba(62, 78, 96, 0.34); }
+
+/* ── 聚落：近岸给锚、内陆给城墙 ─────────────────────────── */
+.omap .rlf__towns { opacity: 0.9; }
+.omap .twn__anchor {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.62);
+  stroke-width: 0.42;
+  stroke-linecap: round;
+}
+.omap .twn__ring {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.62);
+  stroke-width: 0.34;
+}
+.omap .twn__wall {
+  fill: rgba(240, 230, 205, 0.5);
+  stroke: rgba(36, 26, 13, 0.6);
+  stroke-width: 0.4;
+  stroke-linejoin: miter;
+}
+.omap .twn__name {
+  font-family: var(--serif-gr);
+  fill: rgba(36, 26, 13, 0.66);
+  letter-spacing: 0.06em;
+}
+
+/* ── 海面波纹刻线 ───────────────────────────────────────── */
+.omap .sea__waves { opacity: 0.62; }
+.omap .sea__wave {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.2);
+  stroke-width: 0.3;
+  stroke-linecap: round;
+}
+
+/* ── 海怪与帆船：铜版线稿，全轮廓线 + 单侧排线 ──────────── */
+.omap .sea__maritime { opacity: 0.46; }
+
+.omap .bst__ln,
+.omap .shp__ln {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.95);
+  stroke-width: 0.62;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.omap .bst__head { fill: rgba(240, 230, 205, 0.34); }
+.omap .bst__eye { fill: rgba(36, 26, 13, 0.8); stroke: none; }
+.omap .bst__spine,
+.omap .shp__reef {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.5);
+  stroke-width: 0.34;
+  stroke-linecap: round;
+}
+.omap .bst__hach,
+.omap .shp__hach {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.3);
+  stroke-width: 0.3;
+  stroke-linecap: round;
+}
+.omap .bst__spout {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.34);
+  stroke-width: 0.32;
+  stroke-linecap: round;
+}
+.omap .bst__wash,
+.omap .shp__wash {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.26);
+  stroke-width: 0.3;
+  stroke-linecap: round;
+}
+.omap .shp__hull { fill: rgba(240, 230, 205, 0.3); }
+.omap .shp__sail { fill: rgba(240, 230, 205, 0.46); }
+.omap .shp__flag { fill: rgba(36, 26, 13, 0.3); }
+.omap .shp__mast {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.6);
+  stroke-width: 0.4;
+  stroke-linecap: round;
+}
+
+/* ── 注记：疏排的 didone 衬线，海域斜体 ─────────────────── */
+.omap .sea__names { opacity: 1; }
+
+/* ═══════════════════════════════════════════════════════════════
+   V6 —— 山脉名 / 制图者手迹 / 航线墨迹
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 山脉名：沿脊线排的古典拉丁 ────────────────────────────── */
+.omap .rlf__names { opacity: 0.95; }
+.omap .rlf__name {
+  font-family: var(--serif-gr);
+  fill: rgba(36, 26, 13, 0.78);
+  font-style: italic;
+  /* 山名正压在排线最密的地方，没有纸色描边根本读不出来。
+     地图里的城市名、站点名本来就是这么处理的，这里保持一致。 */
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 2.4px;
+  stroke-linejoin: round;
+}
+
+/* ── 制图者手迹 ───────────────────────────────────────────────
+   一律压到「第二眼才看见」。抢主体就是失败。 */
+.omap .mrg { opacity: 0.8; pointer-events: none; }
+
+/* 小风向标 */
+.omap .mrg__rose-ring {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.46);
+  stroke-width: 0.45;
+}
+.omap .mrg__tick { stroke: rgba(36, 26, 13, 0.42); stroke-width: 0.36; }
+.omap .mrg__blade {
+  fill: rgba(240, 230, 205, 0.6);
+  stroke: rgba(36, 26, 13, 0.5);
+  stroke-width: 0.3;
+  stroke-linejoin: round;
+}
+.omap .mrg__blade--dark { fill: rgba(36, 26, 13, 0.46); }
+.omap .mrg__fleur {
+  fill: rgba(36, 26, 13, 0.42);
+  stroke: rgba(36, 26, 13, 0.42);
+  stroke-width: 0.3;
+}
+
+/* 拉丁注记：连笔斜体，比地名更淡 —— 它是批注，不是图上的正式标注 */
+.omap .mrg__note-t {
+  font-family: var(--serif-gr);
+  font-style: italic;
+  fill: rgba(58, 42, 20, 0.66);
+  paint-order: stroke;
+  stroke: var(--paper);
+  stroke-width: 1.8px;
+  stroke-linejoin: round;
+}
+
+/* 修改痕迹：划掉的旧字 + 补写 + 插入符 */
+.omap .mrg__strike {
+  fill: none;
+  stroke: rgba(58, 42, 20, 0.44);
+  stroke-width: 0.45;
+  stroke-linecap: round;
+}
+.omap .mrg__scribble {
+  fill: none;
+  stroke: rgba(58, 42, 20, 0.34);
+  stroke-width: 0.38;
+  stroke-linecap: round;
+}
+.omap .mrg__caret {
+  fill: none;
+  stroke: rgba(58, 42, 20, 0.46);
+  stroke-width: 0.38;
+  stroke-linejoin: round;
+}
+
+/* 指示箭头 */
+.omap .mrg__arrow-ln {
+  fill: none;
+  stroke: rgba(58, 42, 20, 0.42);
+  stroke-width: 0.38;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── 航线：陈年群青，深浅不匀 ─────────────────────────────────
+   几何与线型全是 bootMap 的，这里只改墨色。
+   墨迹扩散层（.route-bleed）是航线组的克隆，垫在下面加粗模糊。 */
+.omap .route-bleed { pointer-events: none; }
+.omap .route-bleed .seg,
+.omap .route-bleed .trail {
+  stroke-dasharray: none;       /* 洇开的墨没有虚线 */
+  filter: none;                  /* 不给克隆件套 inkJitter，太贵也没必要 */
+  stroke-linecap: round;
+}
+/* 外圈：宽而极淡。宽度是主线的两倍上下就够 ——
+   再宽航线会变成一条粗带子，比原来的「Google Map 路线」还糟。 */
+.omap .route-bleed--wide { opacity: 0.14; }
+.omap .route-bleed--wide .seg,
+.omap .route-bleed--wide .trail {
+  stroke: rgba(52, 66, 100, 0.4);
+  stroke-width: 3.3;
+}
+/* 内圈：窄而略深 */
+.omap .route-bleed--near { opacity: 0.2; }
+.omap .route-bleed--near .seg,
+.omap .route-bleed--near .trail {
+  stroke: rgba(48, 62, 98, 0.46);
+  stroke-width: 2.1;
+}
+.omap .route-bleed .node,
+.omap .route-bleed text,
+.omap .route-bleed .malea-line,
+.omap .route-bleed .malea-dot { display: none; }
+
+/* 主线本身：三段线型各给一点差异，避免三条线一个色 */
+.omap .seg.real  { stroke: rgba(48, 62, 98, 0.74); }
+.omap .seg.myth  { stroke: rgba(64, 78, 112, 0.52); }
+.omap .seg.gate  { stroke: rgba(58, 72, 104, 0.48); }
+.omap .trail     { stroke: rgba(44, 58, 96, 0.78); }
+
+/* ── 站名引线 ────────────────────────────────────────────────
+   站名被挤开之后，用一条细墨线牵回节点 —— 历史地图处理密集地名的
+   标准做法（把字挪开，再指回去），比缩小字号可读得多。
+   引线放在 .node 组内部，所以筛选时的 .dim / .unlit 会一起变淡。 */
+.omap .lbl-leader {
+  fill: none;
+  stroke: rgba(36, 26, 13, 0.45);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+/* ── 美术资产层 ──────────────────────────────────────────────
+   外部图元（山脉 / 帆船 / 海怪 / 城堡 / 罗盘 / 注记）统一挂在这里。
+   本层不产生任何几何，只是 <image> 的容器。
+   规矩：绝不吃点击，默认乘算压进纸里，单条资产的 opacity/rotation/
+   blendMode 由 cartographyAssets.js 的记录覆盖。 */
+.omap .carto-assets { pointer-events: none; }
+.omap .casset {
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  /* 统一色调：素材本身是暖褐照片调，直接贴上去会比周围的墨线「脏」且发红。
+     去掉大部分彩度、稍微提亮，让它退回成同一支笔画的墨 ——
+     调这一条就能整体改所有资产的融入程度，不必逐张重新导出。 */
+  filter: sepia(0.32) saturate(0.5) contrast(1.04) brightness(1.03);
+}

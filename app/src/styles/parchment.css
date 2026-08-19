@@ -1,0 +1,220 @@
+/* ═══════════════════════════════════════════════════════════
+   老羊皮手稿
+   目标不是「米黄色网页背景」，而是一张真实存在于镜头中的旧纸。
+   全部克制：任何一层单独看都应该几乎注意不到。
+   ═══════════════════════════════════════════════════════════ */
+
+.pmt {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-color: var(--parchment-1);
+}
+
+.pmt > * {
+  position: absolute;
+  inset: 0;
+}
+
+/* ① 底色 —— 深浅不均，中心略亮，四角转深 */
+.pmt__base {
+  background-image:
+    radial-gradient(128% 104% at 46% 36%, var(--parchment-0) 0%, transparent 56%),
+    radial-gradient(120% 110% at 78% 82%, rgba(176, 146, 92, 0.24) 0%, transparent 52%),
+    radial-gradient(90% 70% at 12% 78%, rgba(198, 172, 118, 0.2) 0%, transparent 58%),
+    radial-gradient(150% 130% at 50% 108%, var(--parchment-3) 0%, transparent 54%),
+    radial-gradient(70% 50% at 88% 14%, rgba(255, 250, 236, 0.42) 0%, transparent 60%);
+}
+
+/* ② 粗糙纸纤维 —— 三向错叠，模拟手工纸的不匀 */
+.pmt__fiber {
+  opacity: 0.62;
+  background-image:
+    repeating-linear-gradient(91deg, rgba(58, 42, 20, 0.03) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(3deg, rgba(58, 42, 20, 0.024) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(47deg, rgba(58, 42, 20, 0.014) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(133deg, rgba(58, 42, 20, 0.01) 0 1px, transparent 1px 9px);
+}
+
+/* ③ 老化污渍 —— 边缘更重，几处淡淡的水渍环 */
+.pmt__stain {
+  opacity: 0.55;
+  background-image:
+    radial-gradient(30% 20% at 16% 74%, rgba(126, 90, 40, 0.09) 0%, rgba(126, 90, 40, 0.04) 62%, transparent 72%),
+    radial-gradient(24% 17% at 84% 20%, rgba(126, 90, 40, 0.075) 0%, transparent 70%),
+    radial-gradient(18% 24% at 66% 90%, rgba(114, 82, 36, 0.06) 0%, transparent 72%),
+    radial-gradient(14% 11% at 32% 10%, rgba(114, 82, 36, 0.055) 0%, transparent 74%),
+    radial-gradient(11% 9% at 52% 46%, rgba(120, 88, 40, 0.035) 0%, transparent 76%);
+}
+
+/* ④ 真实纹理（存在才渲染该节点） */
+.pmt__photo {
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+  background-size: cover;
+  background-position: center;
+}
+
+/* ⑤ 古希腊手稿痕迹 —— 独立文本层，不烧死在图里 */
+.pmt__script {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2.1em;
+  padding: 7vh 8vw;
+  font-family: var(--serif-gr);
+  font-size: clamp(0.85rem, 1.7vw, 1.25rem);
+  line-height: 1.5;
+  color: #2b1f10;
+  transform: rotate(-0.7deg);
+  overflow: hidden;
+}
+
+.pmt__script p {
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* ⑥ 零星墨迹 */
+.pmt__ink {
+  opacity: 0.5;
+  background-image:
+    radial-gradient(1.6px 1.2px at 22% 31%, rgba(30, 22, 10, 0.5), transparent 60%),
+    radial-gradient(1.1px 1.1px at 71% 24%, rgba(30, 22, 10, 0.42), transparent 60%),
+    radial-gradient(2.2px 1.4px at 58% 77%, rgba(30, 22, 10, 0.34), transparent 62%),
+    radial-gradient(1.3px 1.6px at 35% 88%, rgba(30, 22, 10, 0.3), transparent 62%),
+    radial-gradient(1px 1px at 88% 58%, rgba(30, 22, 10, 0.36), transparent 60%);
+}
+
+/* ⑦ 折痕 —— 两道竖折一道横折，靠明暗一线之差表现 */
+.pmt__crease {
+  opacity: 0.5;
+  background-image:
+    linear-gradient(90deg, transparent 32.6%, rgba(255, 252, 240, 0.5) 33%, rgba(70, 52, 24, 0.09) 33.5%, transparent 34%),
+    linear-gradient(90deg, transparent 66.6%, rgba(255, 252, 240, 0.42) 67%, rgba(70, 52, 24, 0.075) 67.5%, transparent 68%),
+    linear-gradient(0deg, transparent 51.6%, rgba(255, 252, 240, 0.36) 52%, rgba(70, 52, 24, 0.06) 52.5%, transparent 53%);
+}
+
+/* ⑧ 局部烧焦 —— 只在两角，极淡 */
+.pmt__burn {
+  opacity: 0.5;
+  background-image:
+    radial-gradient(16% 12% at 99% 4%, rgba(74, 44, 14, 0.4) 0%, rgba(108, 70, 28, 0.14) 46%, transparent 72%),
+    radial-gradient(12% 16% at 2% 97%, rgba(74, 44, 14, 0.32) 0%, rgba(108, 70, 28, 0.11) 48%, transparent 74%);
+}
+
+/* ⑨ 少量孔洞 */
+.pmt__holes span {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(58, 40, 18, 0.34);
+  box-shadow:
+    0 0 0 1px rgba(255, 250, 236, 0.4),
+    inset 0 1px 2px rgba(30, 20, 8, 0.5);
+}
+
+/* ⑩ 颗粒 */
+.pmt__grain {
+  opacity: 0.075;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
+/* ⑪ 边缘磨损与暗角 —— 四边不规则地啃掉一点 */
+.pmt__edge {
+  background:
+    radial-gradient(128% 110% at 50% 44%, transparent 58%, rgba(36, 26, 13, 0.17) 100%),
+    linear-gradient(90deg, rgba(48, 34, 16, 0.14), transparent 3.5%, transparent 96.5%, rgba(48, 34, 16, 0.14)),
+    linear-gradient(0deg, rgba(48, 34, 16, 0.12), transparent 3%, transparent 97%, rgba(48, 34, 16, 0.1));
+  -webkit-mask-image:
+    radial-gradient(circle at 3% 22%, transparent 0 5px, #000 6px),
+    radial-gradient(circle at 97% 61%, transparent 0 4px, #000 5px),
+    radial-gradient(circle at 41% 99%, transparent 0 6px, #000 7px),
+    linear-gradient(#000, #000);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    radial-gradient(circle at 3% 22%, transparent 0 5px, #000 6px),
+    radial-gradient(circle at 97% 61%, transparent 0 4px, #000 5px),
+    radial-gradient(circle at 41% 99%, transparent 0 6px, #000 7px),
+    linear-gradient(#000, #000);
+  mask-composite: intersect;
+}
+
+/* ⑫ 纸面厚度与轻微卷曲 —— 四边极窄的高光/暗边 */
+.pmt__curl {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 252, 242, 0.55),
+    inset 0 -1px 0 rgba(52, 36, 16, 0.16),
+    inset 1px 0 0 rgba(255, 252, 242, 0.32),
+    inset -1px 0 0 rgba(52, 36, 16, 0.13);
+  background:
+    linear-gradient(180deg, rgba(255, 252, 242, 0.16) 0%, transparent 1.6%),
+    linear-gradient(0deg, rgba(52, 36, 16, 0.09) 0%, transparent 1.4%);
+}
+
+/* 地图那张纸：更沉、字迹更少 —— 它是航海图，不是抄本 */
+.pmt--map .pmt__base {
+  background-image:
+    radial-gradient(120% 100% at 52% 40%, var(--parchment-0) 0%, transparent 54%),
+    radial-gradient(130% 120% at 22% 88%, rgba(176, 146, 92, 0.26) 0%, transparent 54%),
+    radial-gradient(150% 130% at 50% 106%, var(--parchment-3) 0%, transparent 52%);
+}
+
+/* ═══ 有真实纹理时 ═══════════════════════════════════════
+   两张扫描件本身已带折痕、孔洞、污渍、撕裂边与手写痕迹。
+   CSS 若继续叠加同类元素只会互相打架、把纹理糊掉。
+   因此纹理存在时，同类层全部关掉，CSS 只保留照片给不了的东西：
+   颗粒、纸张厚度、动态灰尘、极少量 ember、阴影。 */
+.pmt[data-texture='on'] .pmt__photo {
+  opacity: 1;
+  mix-blend-mode: normal;
+  /* 扫描件四周是黑底。仅放大 108% 不够 —— 长宽比一变黑边就露出来，
+     四边同时出现深色块，还会压暗 landmark 的色调。
+     改为图层本身外扩 8% 再 cover：黑边落到可视区之外，永不出现。 */
+  inset: -8%;
+  background-size: cover;
+  background-position: center;
+}
+
+.pmt[data-texture='on'] .pmt__fiber,
+.pmt[data-texture='on'] .pmt__stain,
+.pmt[data-texture='on'] .pmt__crease,
+.pmt[data-texture='on'] .pmt__ink,
+.pmt[data-texture='on'] .pmt__burn,
+.pmt[data-texture='on'] .pmt__holes,
+.pmt[data-texture='on'] .pmt__edge { display: none; }
+
+/* 手稿层保留但压到极淡 —— 扫描件的字迹集中在两侧页边，
+   中央仍是空的，这一层只在中央补一点，不与之打架 */
+.pmt[data-texture='on'] .pmt__script { opacity: 0.42; }
+
+/* 颗粒降到只剩屏幕级的一点齿感 */
+.pmt[data-texture='on'] .pmt__grain { opacity: 0.028; }
+
+/* 纸张厚度保留 —— 照片给不了这个 */
+.pmt[data-texture='on'] .pmt__curl {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 252, 242, 0.3),
+    inset 0 -1px 0 rgba(52, 36, 16, 0.2),
+    0 0 60px rgba(38, 26, 10, 0.16);
+}
+
+/* 序幕纸独有：极少量余烬暖光，只在两角，几乎看不见 */
+.pmt--cinema[data-texture='on'] .pmt__base {
+  background-image:
+    radial-gradient(18% 14% at 97% 6%, rgba(184, 96, 30, 0.09) 0%, transparent 70%),
+    radial-gradient(14% 18% at 3% 95%, rgba(184, 96, 30, 0.07) 0%, transparent 72%);
+}
+
+/* 地图纸：纹理已足够平静，不再叠任何旧化 */
+.pmt--map[data-texture='on'] .pmt__base { background-image: none; }
+
+/* ── 序幕纸：更粗糙、更破损、更戏剧化 ── */
+.pmt--cinema .pmt__fiber { opacity: 0.7; }
+.pmt--cinema .pmt__crease { opacity: 0.6; }
+
+@media (max-width: 820px) {
+  .pmt__script { font-size: 0.8rem; gap: 1.5em; }
+}

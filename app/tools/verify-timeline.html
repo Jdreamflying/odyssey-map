@@ -1,0 +1,95 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>timeline mapping verification</title>
+<!--
+  开发期校验工具（不属于站点内容）。
+  用法：npm run build，把本文件复制进 dist/，然后无头浏览器打开 dist/verify-timeline.html。
+  它直接驱动主时间轴的 progress（绕开 rAF），逐点核对十二幕的进入/交叠/退出与可逆性。
+-->
+<body style="font:12.5px monospace;white-space:pre">
+<div id="out">running…</div>
+<script>
+const frame = document.createElement('iframe');
+frame.style.cssText = 'width:1280px;height:800px;border:0;position:absolute;left:0;top:0';
+frame.src = './index.html?debug=1';
+document.body.appendChild(frame);
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const L = [];
+
+frame.onload = async () => {
+  const w = frame.contentWindow, d = frame.contentDocument;
+  await sleep(2500);
+
+  const api = w.__odyssey;
+  if (!api) { document.getElementById('out').textContent = 'NO DEBUG HOOK'; return; }
+  const tl = api.tl;
+
+  L.push('scrollable=' + (d.documentElement.scrollHeight - w.innerHeight) +
+         '  scenes=' + d.querySelectorAll('.oscene').length +
+         '  tl.duration=' + tl.duration());
+  L.push('placeholders=' + d.querySelectorAll('.missing').length +
+         '  real images=' + d.querySelectorAll('.oscene__img').length);
+  L.push('');
+  L.push('  progress | visible layers  (no:opacity)');
+  L.push('  ---------+------------------------------------------------');
+
+  const read = () => [...d.querySelectorAll('.oscene')].map(el => {
+    const cs = w.getComputedStyle(el);
+    return { no: el.dataset.no, o: +(+cs.opacity).toFixed(2), v: cs.visibility };
+  }).filter(x => x.v !== 'hidden' && x.o > 0.005);
+
+  const at = (p) => {
+    tl.progress(p);
+    const vis = read();
+    L.push('    ' + p.toFixed(3) + ' | ' + (vis.map(x => x.no + ':' + x.o.toFixed(2)).join('   ') || '(none)'));
+    return vis;
+  };
+
+  const pts = [0.000, 0.020, 0.040, 0.070, 0.085, 0.090, 0.100,
+               0.103, 0.150, 0.165, 0.178, 0.240, 0.253, 0.315,
+               0.328, 0.390, 0.403, 0.465, 0.478, 0.540, 0.553,
+               0.615, 0.628, 0.690, 0.703, 0.765, 0.778, 0.840,
+               0.880, 0.930, 0.960, 1.000];
+  for (const p of pts) at(p);
+
+  L.push('');
+  L.push('CROSS-DISSOLVE CHECK');
+  let overlaps = 0;
+  for (let p = 0; p <= 1.0001; p += 0.002) {
+    tl.progress(Math.min(p, 1));
+    if (read().length >= 2) overlaps++;
+  }
+  L.push('  同时有 >=2 幕可见的采样点: ' + overlaps + ' / 501');
+
+  const scenes = [...d.querySelectorAll('.oscene')].map(el => el.dataset.no);
+  const pairs = [];
+  for (let i = 0; i < scenes.length - 1; i++) {
+    let found = false;
+    for (let p = 0; p <= 1.0001 && !found; p += 0.001) {
+      tl.progress(Math.min(p, 1));
+      const v = read().map(x => x.no);
+      if (v.includes(scenes[i]) && v.includes(scenes[i + 1])) found = true;
+    }
+    pairs.push(scenes[i] + '>' + scenes[i + 1] + (found ? ' ok' : ' MISS'));
+  }
+  L.push('  ' + pairs.join('  '));
+
+  tl.progress(1);
+  const endEl = d.querySelector('.timeline__end');
+  L.push('');
+  L.push('END STATE  end-text opacity=' + (+w.getComputedStyle(endEl).opacity).toFixed(2) +
+         ' visibility=' + w.getComputedStyle(endEl).visibility);
+  L.push('  final visible: ' + read().map(x => x.no + ':' + x.o.toFixed(2)).join('  '));
+
+  tl.progress(0.178);
+  const a = read().map(x => x.no + ':' + x.o.toFixed(2)).join(' ');
+  tl.progress(0.9);
+  tl.progress(0.178);
+  const b = read().map(x => x.no + ':' + x.o.toFixed(2)).join(' ');
+  L.push('');
+  L.push('REVERSIBILITY  forward=' + a + '  after-return=' + b + '  ' + (a === b ? 'IDENTICAL' : 'DRIFT'));
+
+  document.getElementById('out').textContent = L.join('\n');
+};
+</script>

@@ -1,0 +1,419 @@
+/* ═══════════════════════════════════════════════════════════
+   Map V2 —— 同一张巨大羊皮纸上的航海图与档案
+   覆写移植过来的布局，不改动地图逻辑。
+   ═══════════════════════════════════════════════════════════ */
+
+.omap {
+  --header-h: clamp(52px, 7vh, 78px);
+}
+
+/* 纸由 Parchment 组件承担，地图自己的纸底取消 */
+.omap #paper {
+  background: none;
+}
+
+/* ── 顶部安全区：地图内容一律从其下方开始，不再互相覆盖 ── */
+.omap .mapheader {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 clamp(16px, 3vw, 40px);
+  pointer-events: none;
+}
+
+.omap .mapheader__title {
+  margin: 0;
+  font-family: var(--serif-gr);
+  font-size: clamp(0.8rem, 1.6vw, 1.05rem);
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.omap .mapheader__sub {
+  margin: 0;
+  font-family: var(--label);
+  font-size: 0.62rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* 顶栏与纸面之间一道极淡的分隔，不用实线边框 */
+.omap .mapheader::after {
+  content: '';
+  position: absolute;
+  left: clamp(16px, 3vw, 40px);
+  right: clamp(16px, 3vw, 40px);
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(36, 26, 13, 0.22) 12%, rgba(36, 26, 13, 0.22) 88%, transparent);
+}
+
+/* ── 主布局：左 63% 海图 / 右 33% 学者注记 ── */
+.omap #stage {
+  top: var(--header-h);
+  grid-template-columns: 63fr 33fr;
+  grid-template-rows: 1fr auto;
+  gap: 0 clamp(8px, 2vw, 30px);
+  padding: clamp(6px, 1.4vh, 16px) clamp(14px, 2.6vw, 36px) 0;
+}
+
+/* ── 古航海图视觉强化 ────────────────────────────────────── */
+
+/* 陆地：加一层极细的岸线排线，读起来像雕版而不是色块 */
+.omap .land {
+  fill: var(--land);
+  stroke: var(--coast);
+  stroke-width: 1;
+  filter: url(#coastRough);
+}
+
+/* 经纬网更淡，只作暗示 */
+.omap .grat { stroke: rgba(36, 26, 13, 0.075); }
+
+/* 航线：实线段更像刻线 */
+.omap .seg.real { stroke-width: 1.6; }
+
+/* 站点在古图底子上仍要清晰可读 —— 白描外圈保证对比 */
+.omap .node .ring { stroke-width: 1.5; }
+.omap .node .lbl { stroke-width: 3.6px; }
+
+/* 海面细纹与装饰只在空白处，绝不压住节点 */
+.omap .sea-mark { opacity: 0.5; }
+
+/* ── 右侧：学者注记，不是 Card UI ── */
+.omap #notebook {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: clamp(10px, 2vh, 22px) 0 0;
+  -webkit-mask-image: linear-gradient(0deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(0deg, transparent 0%, #000 8%, #000 92%, transparent 100%);
+}
+
+.omap .nb-head {
+  border: 0;
+  background: none;
+  padding: 0 0 10px;
+  border-bottom: 1px solid rgba(36, 26, 13, 0.2);
+}
+
+.omap .nb-body {
+  padding: 14px 0 0;
+}
+
+/* 注记内部的分节：细墨线 + 留白，不用方框 */
+.omap .nb-body h4, .omap .nb-body .sec {
+  border: 0;
+  background: none;
+  padding-left: 0;
+}
+
+.omap .nb-nav {
+  border: 0;
+  background: none;
+  padding: 14px 0 0;
+  border-top: 1px solid rgba(36, 26, 13, 0.16);
+}
+
+.omap .nb-nav button {
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  font-family: var(--label);
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.omap .nb-nav button:hover { color: var(--ink); }
+
+/* ── 时间尺：贴纸面，去掉容器感 ── */
+.omap #chron {
+  grid-column: 1 / -1;
+  background: none;
+  border: 0;
+  border-top: 1px solid rgba(36, 26, 13, 0.16);
+  padding: 8px clamp(14px, 2.6vw, 36px) 10px;
+}
+
+/* ── 题记与图例：去掉硬矩形，改为淡入纸面 ── */
+.omap .cartouche, .omap .legendbox {
+  background: linear-gradient(180deg, rgba(240, 230, 205, 0.55), rgba(240, 230, 205, 0.2));
+  border: 0;
+  box-shadow: none;
+  -webkit-mask-image: radial-gradient(120% 130% at 30% 40%, #000 55%, transparent 100%);
+  mask-image: radial-gradient(120% 130% at 30% 40%, #000 55%, transparent 100%);
+}
+
+@media (max-width: 900px) {
+  .omap #stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto auto;
+  }
+  .omap .landmark-stage { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   右侧学者注记 —— 重排后的结构（见 bootMap render()）
+   靠字体层级、留白与细墨线，不用任何矩形卡片。
+   ═══════════════════════════════════════════════════════════ */
+
+.omap .note {
+  padding: 0 2px 26px 0;
+}
+
+.omap .note__index {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.omap .note__roman {
+  font-family: var(--serif-gr);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: 0.06em;
+}
+
+.omap .note__ev {
+  font-family: var(--label);
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding-bottom: 2px;
+  border-bottom: 1px solid currentColor;
+}
+
+.omap .note__ev.ev-hard { color: var(--ink); }
+.omap .note__ev--dispute { color: var(--sepia); }
+
+.omap .note__head { margin-top: 14px; }
+
+.omap .note__gr {
+  margin: 0;
+  font-family: var(--serif-gr);
+  font-weight: 400;
+  font-size: clamp(1.15rem, 2vw, 1.5rem);
+  letter-spacing: 0.1em;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.omap .note__cn {
+  margin: 0.3em 0 0;
+  font-family: var(--serif-cn);
+  font-weight: 900;
+  font-size: clamp(1rem, 1.7vw, 1.25rem);
+  letter-spacing: 0.1em;
+  color: var(--ink);
+}
+
+.omap .note__book {
+  margin: 0.5em 0 0;
+  font-family: var(--label);
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* 细墨线：中间粗两端淡，像手绘的分隔 */
+.omap .note__rule {
+  height: 1px;
+  margin: 16px 0 15px;
+  background: linear-gradient(90deg, rgba(36, 26, 13, 0.5) 0%, rgba(36, 26, 13, 0.3) 62%, transparent 100%);
+}
+
+.omap .note__lede {
+  margin: 0;
+  font-family: var(--serif-cn);
+  font-size: 0.95rem;
+  line-height: 1.85;
+  color: var(--ink);
+}
+
+/* 版画小图：贴在注记里，像书页插图 */
+.omap .note__plate {
+  width: 84px;
+  margin: 18px 0 4px;
+  opacity: 0.9;
+}
+
+.omap .note__plate svg { display: block; width: 100%; height: auto; }
+
+.omap .note__sec {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(36, 26, 13, 0.14);
+}
+
+.omap .note__label {
+  margin: 0 0 8px;
+  font-family: var(--label);
+  font-weight: 400;
+  font-size: 0.6rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--sepia);
+}
+
+.omap .note__body {
+  font-family: var(--serif-cn);
+  font-size: 0.88rem;
+  line-height: 1.95;
+  color: var(--ink-soft);
+}
+
+.omap .note__body em { font-style: normal; color: var(--ink); font-weight: 700; }
+
+.omap .note__quote {
+  margin: 12px 0 0;
+  padding-left: 13px;
+  border-left: 2px solid rgba(36, 26, 13, 0.4);
+  font-family: var(--serif-gr);
+  font-size: 0.92rem;
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.omap .note__quote cite {
+  display: block;
+  margin-top: 6px;
+  font-family: var(--label);
+  font-style: normal;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.omap .note__flag {
+  margin: 12px 0 0;
+  padding-left: 13px;
+  border-left: 2px solid var(--sepia);
+  color: var(--sepia);
+  font-size: 0.84rem;
+}
+
+.omap .note__yes { margin: 0; }
+.omap .note__no { margin: 10px 0 0; color: var(--ink); }
+.omap .note__no b { font-weight: 700; }
+
+.omap .note__addr {
+  font-family: var(--label);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+}
+
+/* ═══ 18 世纪古地图化 ═══ */
+
+/* 海：极淡的排线，让海不是空白 */
+.omap #chart::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(36, 26, 13, 0.028) 0 1px, transparent 1px 9px);
+  -webkit-mask-image: radial-gradient(120% 110% at 45% 45%, #000 40%, transparent 92%);
+  mask-image: radial-gradient(120% 110% at 45% 45%, #000 40%, transparent 92%);
+}
+
+/* 海岸阴影：陆地外圈一道晕开的深边 */
+.omap .land {
+  filter: url(#coastRough) drop-shadow(0 0 2.5px rgba(36, 26, 13, 0.34));
+}
+
+/* 罗盘与比例尺加重，像刻上去的 */
+.omap .rose { opacity: 0.9; }
+.omap .scalebar { opacity: 0.85; }
+
+/* 老地图式地名排版 */
+.omap .city text {
+  font-family: var(--serif-gr);
+  font-style: italic;
+  letter-spacing: 0.06em;
+}
+
+.omap .node .lbl {
+  font-family: var(--serif-gr);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+/* ═══ 命中测试：装饰层一律不吃事件，交互元素一律要能点到 ═══ */
+.omap .crease, .omap .sea-mark, .omap #defs, .omap .mapheader, .omap .landmark-stage, .omap .landmark { pointer-events: none; }
+
+/* 图例、折角标签、笔记本导航必须可点 */
+.omap .legendbox, .omap .plaques, .omap .plaque, .omap #tabs, .omap .foldtab, .omap .nb-nav, .omap .nb-nav button, .omap .leaflet, .omap .node { pointer-events: auto; }
+
+/* 站点在插画之上，插画绝不挡节点 */
+.omap #chart { z-index: 4; }
+
+/* 图例框回到地图左下，做成古地图上的小图例，不是工具栏 */
+.omap .legendbox {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 4;
+  padding: 8px 12px 9px;
+  background: linear-gradient(180deg, rgba(240, 230, 205, 0.62), rgba(240, 230, 205, 0.3));
+  -webkit-mask-image: none;
+  mask-image: none;
+  border: 0;
+  border-top: 1px solid rgba(36, 26, 13, 0.22);
+}
+
+.omap .legendbox .lhead {
+  font-family: var(--label);
+  font-size: 0.56rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 6px;
+}
+
+/* 图例说明文字已移入「怎么读这张图」夹页 */
+.omap .legendbox .rule-row { display: none; }
+
+/* 「怎么读这张图」里新增的记号说明 */
+.omap .how-legend {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(36, 26, 13, 0.16);
+}
+
+.omap .how-legend h4 {
+  margin: 0 0 10px;
+  font-family: var(--label);
+  font-weight: 400;
+  font-size: 0.6rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--sepia);
+}
+
+.omap .how-legend span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.omap .how-legend b { color: var(--ink); font-weight: 700; }

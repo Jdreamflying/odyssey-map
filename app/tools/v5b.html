@@ -1,0 +1,70 @@
+<!doctype html><meta charset="utf-8"><body style="font:12px monospace;white-space:pre"><div id="out">start</div>
+<script>
+const O=document.getElementById('out'),L=[],P=x=>{L.push(x);O.textContent=L.join('\n');};
+const S=m=>new Promise(r=>setTimeout(r,m));
+let f;
+function mk(w,h){return new Promise(res=>{ if(f)f.remove();
+  f=document.createElement('iframe');
+  f.style.cssText=`width:${w}px;height:${h}px;border:0;position:absolute;left:0;top:0`;
+  f.src='./index.html?debug=1'; f.onload=()=>setTimeout(()=>res(f),4200);
+  document.body.appendChild(f);});}
+(async()=>{
+ let fr=await mk(1400,860);
+ let w=fr.contentWindow,d=fr.contentDocument;
+ if(w.__odyssey) w.__odyssey.tl.time(14.6);
+ await S(500);
+ const svg=d.querySelector('#map');
+ const lands=[...svg.querySelectorAll('.land')];
+ const pt=svg.createSVGPoint();
+ const onLand=(x,y)=>{pt.x=x;pt.y=y;return lands.some(p=>{try{return p.isPointInFill(pt)}catch(e){return false}})};
+ P('=== Athens 修复验证 ===');
+ const cityTexts=[...svg.querySelectorAll('.city text')];
+ const ath=cityTexts.find(t=>t.textContent.indexOf('雅典')>=0);
+ if(ath){const c=ath.previousElementSibling||ath.parentNode.querySelector('circle');
+   const cx=c?+c.getAttribute('cx'):+ath.getAttribute('x'), cy=c?+c.getAttribute('cy'):+ath.getAttribute('y');
+   P('  雅典点 ('+cx.toFixed(0)+','+cy.toFixed(0)+') 在陆地上: '+(onLand(cx,cy)?'YES ✓':'NO ✗'));}
+ else P('  未找到雅典标签');
+ let ok=0,bad=[];
+ [...svg.querySelectorAll('.city circle')].forEach((c,i)=>{
+   const x=+c.getAttribute('cx'),y=+c.getAttribute('cy');
+   const t=c.parentNode.querySelector('text');
+   if(onLand(x,y))ok++;else bad.push(t?t.textContent:'#'+i);});
+ P('  现代城市层 陆上='+ok+' 落海='+bad.length+(bad.length?' → '+bad.join(',').slice(0,90):''));
+ P('');P('=== 视觉参数 ===');
+ const st=d.querySelector('.landmark-stage'),r=st.getBoundingClientRect();
+ P('  Landmark 舞台 '+r.width.toFixed(0)+'x'+r.height.toFixed(0)+'  = '+(r.height/860*100).toFixed(0)+'vh   left='+r.left.toFixed(0));
+ P('  land fill: '+w.getComputedStyle(d.querySelector('.land')).fill);
+ P('  malea-line: '+w.getComputedStyle(d.querySelector('.malea-line')).stroke);
+ P('  trail filter: '+w.getComputedStyle(d.querySelector('.trail')).filter);
+ P('  海域名 opacity='+w.getComputedStyle(d.querySelector('.cname--sea')).opacity+
+   '  城市名='+w.getComputedStyle(d.querySelector('.cityname')).opacity+
+   '  恒向线='+w.getComputedStyle(d.querySelector('.carto__rhumb')).opacity);
+ P('');P('=== 命中测试 (desktop) ===');
+ let pass=0,bd=[];
+ const hit=(el,lab)=>{if(!el){bd.push(lab+':缺');return;}
+   const b=el.getBoundingClientRect(); if(!b.width||!b.height){bd.push(lab+':0');return;}
+   const tp=d.elementFromPoint(b.left+b.width/2,b.top+b.height/2);
+   if(el===tp||el.contains(tp)||(tp&&tp.contains(el)))pass++;else bd.push(lab+'<-'+(tp?(tp.getAttribute('class')||tp.tagName):'null'));};
+ [...d.querySelectorAll('.omap .plaque')].forEach((b,i)=>hit(b,'图例'+i));
+ [...d.querySelectorAll('.omap .node')].forEach((n,i)=>hit(n,'n'+i));
+ hit(d.querySelector('#prev'),'prev');hit(d.querySelector('#next'),'next');
+ [...d.querySelectorAll('.foldtab')].forEach((b,i)=>hit(b,'tab'+i));
+ P('  通过 '+pass+'  失败 '+bd.length+(bd.length?' → '+bd.join(' | '):''));
+
+ for(const [ww,hh,name] of [[1280,800,'Desktop'],[1024,768,'Tablet'],[420,860,'Mobile']]){
+   fr=await mk(ww,hh); w=fr.contentWindow; d=fr.contentDocument;
+   if(w.__odyssey) w.__odyssey.tl.time(14.6);
+   await S(600);
+   const ch=d.querySelector('#chart'), nb=d.querySelector('#notebook'), pa=d.querySelector('#paper');
+   const cr=ch?ch.getBoundingClientRect():null, nr=nb?nb.getBoundingClientRect():null;
+   P('');P('=== '+name+' '+ww+'x'+hh+' ===');
+   P('  地图 '+(cr?cr.width.toFixed(0)+'x'+cr.height.toFixed(0):'无')+'  可见='+(cr&&cr.width>50&&cr.height>50?'YES':'NO ✗'));
+   P('  笔记本 '+(nr?nr.width.toFixed(0)+'x'+nr.height.toFixed(0):'无')+'  可见='+(nr&&nr.width>50&&nr.height>40?'YES':'NO ✗'));
+   P('  #paper overflowY='+(pa?w.getComputedStyle(pa).overflowY:'-')+'  可滚动='+(pa?(pa.scrollHeight>pa.clientHeight+4?'YES ('+pa.scrollHeight+'>'+pa.clientHeight+')':'不需要'):'-'));
+   P('  节点可点样本='+(()=>{const n=d.querySelector('.omap .node');if(!n)return'无';
+     const b=n.getBoundingClientRect();if(!b.width)return'0尺寸';
+     const tp=d.elementFromPoint(b.left+b.width/2,b.top+b.height/2);
+     return (n===tp||n.contains(tp))?'YES':'被遮挡';})());
+ }
+})();
+</script>

@@ -1,0 +1,435 @@
+/* ═══ 互动地图样式 —— 自 6-vibe-coding 原样移植，仅重指向调色板并收敛全局选择器 ═══
+
+   ⚠ 命名契约（地图侧）
+   ───────────────────────────────────────────────────────────
+   移植进来时这张表的 197 条规则**一条都没有作用域**，等于一份全局样式：
+   .plate / .grid / .tile / .flag / .badge / .quote / .land / .crease /
+   .node / .rose / .sw / #paper / #stage / #chart …… 影片侧只要出现任何
+   一个同名类就会当场被地图样式接管。当时影片能活着，纯粹是靠名字没撞上。
+
+   现在本表（含 map-v2.css / map-v3.css）每一条选择器都以 .omap 打头，
+   地图样式无法再逸出 .omap 容器。新增规则务必照做。
+   影片侧对应的封闭前缀是 .Cinema*，见 timeline.css 顶部。
+
+   例外只有一个：.replay（重播影片按钮）是 App 直接渲染在 .omap 之外的
+   chrome，已从本目录的 map-v2.css 移到 index.css。 ═══ */
+
+    /* ══ 字体 —— 自托管 woff2（思源宋体 900 / GFS Didot / GFS Neohellenic，按 unicode-range 分片） ══ */
+/* ══ tokens · 单一纸本主题（刻意不设暗色，整页就是一张纸） ═════════ */
+  /* 调色板改指向长卷的 token —— 地图与长卷同纸同墨。
+     群青强调色保留，它是地图独有的「证据」语义色，长卷里不出现。 */
+  .omap {
+    --paper:     #e6d7b6;
+    --paper-hi:  #f0e6cd;
+    --paper-lo:  #c8b183;
+    --ink:       #241a0d;
+    --ink-2:     #4c3a20;
+    --ink-3:     #8c744d;
+    --accent:    #1B3FA0;
+    --accent-lo: rgba(27,63,160,.12);
+    --rule:      rgba(36,26,13,.22);
+    --rule-soft: rgba(36,26,13,.11);
+    --land:      #dccdaa;
+    --coast:     rgba(36,26,13,.55);
+    --serif-cn: "Source Han Serif SC","Songti SC","SimSun",serif;
+    --serif-gr: "GFS Didot","Palatino Linotype",Palatino,Georgia,serif;
+    --label:    "GFS Neohellenic","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --sans:     "Helvetica Neue",Helvetica,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+  }
+
+  /* ══ base ═══════════════════════════════════════════════════════════ */
+  .omap {
+    color: var(--ink);
+    font-family: var(--sans); font-size: 14.5px; line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  .omap h1, .omap h2, .omap h3 { font-family: var(--serif-cn); margin:0; text-wrap: balance; }
+  .omap h1, .omap h2 { font-weight: 900; }
+  .omap h3 { font-weight: 700; }
+  .omap p { margin:0; }
+  .omap button { font: inherit; color: inherit; }
+  .omap :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 1px; }
+
+  .omap .gr { font-family: var(--serif-gr); }
+  .omap .lab { font-family: var(--label); letter-spacing: .12em; text-transform: uppercase; }
+
+  /* ══ 隐藏的雕版排线 defs（全文档共享，pattern 按 id 引用） ════════ */
+  .omap #defs { position:absolute; width:0; height:0; overflow:hidden; }
+
+  /* ══ 主界面：整视口一张纸 ══════════════════════════════════════════ */
+  .omap #paper {
+    position: absolute; inset: 0; overflow: hidden;
+    background:
+      radial-gradient(120% 100% at 50% 42%, var(--paper) 0 58%, var(--paper-lo) 100%);
+  }
+  .omap #paper::before {   /* 纸纹 + 斑点 */
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:
+      radial-gradient(rgba(30,26,20,.05) 0.6px, transparent 0.6px);
+    background-size: 3px 3px;
+    opacity:.5;
+    mix-blend-mode: multiply;
+  }
+  .omap #paper::after {    /* 边缘磨损暗角 */
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(115% 115% at 50% 45%, transparent 55%, rgba(30,26,20,.12) 100%);
+  }
+
+  /* 折痕 —— 横贯整张纸，从所有内容底下过去 */
+  .omap .crease {
+    position: absolute; left: -4%; right: -4%; height: 1px; pointer-events: none; z-index: 0;
+    background: linear-gradient(90deg, transparent, rgba(30,26,20,.28) 18%, rgba(30,26,20,.36) 50%, rgba(30,26,20,.28) 82%, transparent);
+    box-shadow: 0 1px 0 rgba(255,255,255,.5);
+  }
+  .omap .crease.c1 { top: 33.4%; }
+  .omap .crease.c2 { top: 66.7%; }
+  .omap .crease.c3 { top: 50%; opacity:.5; }
+
+  /* 空白处的海味 */
+  .omap .sea-mark { position:absolute; pointer-events:none; opacity:.5; }
+  .omap .sea-mark svg { width:100%; height:100%; }
+  .omap .sea-mark .w { fill:none; stroke: var(--ink-3); stroke-width:.8; stroke-linecap:round; opacity:.5; }
+
+  /* ── 布局网格：左海图，右笔记本 ── */
+  .omap #stage {
+    position: absolute; inset: 0; display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    grid-template-rows: 1fr 76px;
+    z-index: 1;
+  }
+
+  /* 海图区 */
+  .omap #chart { grid-column:1; grid-row:1; position: relative; min-width:0; min-height:0; }
+  .omap svg#map { position:absolute; inset:0; width:100%; height:100%; display:block; cursor:pointer; touch-action: manipulation; }
+
+  .omap .land { fill: var(--land); stroke: var(--coast); stroke-width:.9; stroke-linejoin:round;
+         opacity: 1; }
+  .omap .grat { stroke: rgba(30,26,20,.09); stroke-width:.6; fill:none; opacity: 1; }
+  .omap .gratlabel, .omap .scalebar, .omap .rose, .omap .city, .omap .malea-line, .omap .malea-dot { opacity: 1; }
+  .omap .gratlabel { font-family: var(--label); font-size:9px; fill: var(--ink-3); letter-spacing:.04em; opacity:.8; }
+  .omap .city rect { fill: var(--ink-3); }
+  .omap .city text { font-family: var(--label); font-size:9.5px; fill: var(--ink-3); letter-spacing:.02em;
+              paint-order: stroke; stroke: var(--paper); stroke-width:3px; stroke-linejoin:round; }
+
+  .omap .seg { fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .omap .seg.real { stroke: var(--ink-2); stroke-width:1.5; opacity: .5; }
+  .omap .seg.myth { stroke: var(--ink-3); stroke-width:1.4; opacity: .46; stroke-dasharray: 2 6; }
+  .omap .seg.gate { stroke: var(--ink-2); stroke-width:1.4; opacity: .46; stroke-dasharray: 7 5; }
+  .omap .trail { fill:none; stroke: var(--accent); stroke-width:2.6;
+          stroke-linecap:round; stroke-linejoin:round; opacity: .9; }
+
+  .omap .malea-line { stroke: var(--ink); stroke-width:1.7; stroke-dasharray: 9 4; opacity:1; }   /* 全图唯一纯黑线 */
+  .omap .malea-dot { fill: var(--ink); }
+  .omap .malea-tag { font-family: var(--label); font-size:10px; fill: var(--ink); letter-spacing:.08em;
+              paint-order: stroke; stroke: var(--paper); stroke-width:3.2px; stroke-linejoin:round; }
+  .omap .zone-tag { font-family: var(--serif-gr); font-size:14px; font-style:italic; fill: var(--ink-2);
+             opacity: .8; paint-order: stroke; stroke: var(--paper); stroke-width:3.2px; }
+
+  /* 站点 —— 证据等级用排线，不用颜色 */
+  .omap .node { cursor:pointer; transition: opacity .3s ease; opacity: 1; }
+  .omap .node .halo { fill: var(--paper); opacity:.0; }
+  .omap .node .ring { fill:none; stroke: var(--ink-2); stroke-width:1.3; }
+  .omap .node .core { stroke: var(--ink); stroke-width:1; }
+  .omap .node.hard .core { fill: url(#p-hx); }
+  .omap .node.conj .core { fill: url(#p-h1); }
+  .omap .node.myth .core { fill: url(#p-stip); }
+  .omap .node.acc-landmark .ring { stroke-dasharray: 2.6 2.6; }
+  .omap .node.acc-none .ring { stroke-dasharray: 1.2 3.4; opacity:.6; }
+  .omap .node .num { font-family: var(--label); font-size:8px; font-weight:400; fill: var(--paper);
+              text-anchor:middle; dominant-baseline:central; pointer-events:none; letter-spacing:0; }
+  .omap .node .lbl { font-family: var(--sans); font-size:11.5px; fill: var(--ink); pointer-events:none;
+              paint-order: stroke; stroke: var(--paper); stroke-width:3.2px; stroke-linejoin:round; }
+  .omap .node .dispute { fill: var(--ink); font-family: var(--label); font-size:9px;
+                  text-anchor:middle; pointer-events:none; }
+  .omap .node .selring { fill:none; stroke: var(--accent); stroke-width:1.6; opacity:0; transition: opacity .2s; }
+  .omap .node.sel .selring { opacity:.95; }
+  .omap .node.sel .lbl { font-weight:700; }
+  .omap .node:hover .lbl { fill: var(--accent); }
+  .omap .node.dim { opacity: .14; pointer-events:none; }
+  .omap .node.unlit { opacity: .12; }
+
+  .omap .ripple circle {
+    fill:none; stroke: var(--ink-2); stroke-width:1;
+    stroke-dasharray: 1.1 3.2; stroke-linecap:round; pointer-events:none;
+  }
+
+  /* 罗盘玫瑰（海图上的那一抹群青 = 指针） */
+  .omap .rose .pt { fill: var(--ink-3); opacity:.5; }
+  .omap .rose .pt.card { fill: var(--ink-2); opacity:.7; }
+  .omap .rose .rim { fill:none; stroke: var(--ink-3); stroke-width:.8; opacity:.4; }
+  .omap .rose .tick { stroke: var(--ink-3); stroke-width:.7; opacity:.36; }
+  .omap .rose .nlab { font-family: var(--serif-gr); font-style:italic; font-size:11px; fill: var(--ink-3); opacity:.7; text-anchor:middle; }
+  .omap .rose .needle { fill: var(--accent); opacity:.9; }
+  .omap .rose .needle-b { fill: var(--ink-3); opacity:.4; }
+  .omap .rose .hub { fill: var(--paper); stroke: var(--ink-3); stroke-width:.8; }
+
+  .omap .scalebar path, .omap .scalebar line { stroke: var(--ink-3); stroke-width:1; fill:none; }
+  .omap .scaletext { font-family: var(--label); font-size:9px; fill: var(--ink-3); letter-spacing:.04em; }
+
+  /* ── 题记框（左上） ── */
+  .omap .cartouche {
+    position: absolute; top: 20px; left: 20px; max-width: 440px;
+    padding: 16px 20px 15px; pointer-events: none;
+  }
+  .omap .cartouche::before, .omap .cartouche::after {
+    content:""; position:absolute; left:0; right:0; height:1px;
+    background: var(--ink); opacity:.85;
+  }
+  .omap .cartouche::before { top:0; }
+  .omap .cartouche::after { bottom:0; }
+  .omap .cartouche .cb-l, .omap .cartouche .cb-r {
+    position:absolute; top:0; bottom:0; width:1px; background: var(--ink); opacity:.85;
+  }
+  .omap .cartouche .cb-l { left:0; } .omap .cartouche .cb-r { right:0; }
+  .omap .cartouche .cb-l::before, .omap .cartouche .cb-l::after, .omap .cartouche .cb-r::before, .omap .cartouche .cb-r::after {
+    content:""; position:absolute; left:0; width:5px; height:1px; background: var(--ink);
+  }
+  .omap .cartouche .cb-l::before { top:0; } .omap .cartouche .cb-l::after { bottom:0; }
+  .omap .cartouche .cb-r::before { top:0; } .omap .cartouche .cb-r::after { bottom:0; }
+  .omap .eyebrow { font-family: var(--label); font-size:10px; letter-spacing:.16em; color: var(--ink-3); margin-bottom:8px; }
+  .omap .cartouche h1 { font-size: clamp(24px, 2.7vw, 38px); line-height: 1.12; letter-spacing:.01em; }
+  .omap .cartouche h1 .lat { font-family: var(--serif-gr); font-weight:400; font-style:italic; color: var(--ink-2);
+                      font-size:.5em; letter-spacing:.02em; display:block; margin-top:6px; }
+  .omap .thesis { margin-top:10px; font-size:13px; color: var(--ink-2); line-height:1.62; }
+  .omap .thesis strong { color: var(--ink); font-weight:600; }
+  .omap .ledger { margin-top:10px; display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color: var(--ink-3); }
+  .omap .ledger b { font-family: var(--label); font-weight:400; font-size:17px; color: var(--ink-2);
+             font-variant-numeric: tabular-nums; }
+  .omap .ledger .zero b { color: var(--accent); }
+
+  /* ── 图例框 + 小铜牌筛选（左下） ── */
+  .omap .legendbox {
+    position: absolute; left: 20px; bottom: 20px; max-width: 470px;
+    padding: 13px 16px 13px; background: rgba(246,242,230,.55);
+    border: 1px solid var(--rule); box-shadow: 0 1px 0 rgba(255,255,255,.4);
+  }
+  .omap .legendbox .lhead { font-family: var(--label); font-size:10px; letter-spacing:.14em; color: var(--ink-3); margin-bottom:8px; }
+  .omap .plaques { display:flex; flex-wrap:wrap; gap:7px; }
+  .omap .plaque {
+    display:inline-flex; align-items:center; gap:7px; cursor:pointer;
+    padding:4px 11px 4px 9px; border-radius:2px; border:1px solid var(--rule);
+    background: linear-gradient(180deg, rgba(255,252,240,.7), rgba(214,204,180,.5));
+    color: var(--ink-2); font-size:12px; letter-spacing:.02em;
+    box-shadow: 0 1px 1px rgba(30,26,20,.18), inset 0 1px 0 rgba(255,255,255,.55);
+    transition: filter .15s, color .15s;
+  }
+  .omap .plaque:hover { filter: brightness(1.04); color: var(--ink); }
+  .omap .plaque .dot { width:10px; height:10px; border-radius:50%; border:1px solid var(--ink); flex:none; }
+  .omap .plaque[data-ev="hard"] .dot { background: url(#p-hx); }
+  .omap .plaque[data-ev="conj"] .dot { background: url(#p-h1); }
+  .omap .plaque[data-ev="myth"] .dot { background: url(#p-stip); }
+  .omap .plaque[aria-pressed="false"] { opacity:.4; }
+  .omap .legendbox .rule-row { margin-top:9px; display:flex; flex-wrap:wrap; gap:5px 14px; font-size:11.5px; color: var(--ink-3); }
+  .omap .legendbox .rule-row i { font-style:normal; }
+  .omap .legendbox .rule-row b { color: var(--ink-2); font-weight:600; }
+  .omap .sw { display:inline-block; vertical-align:-1px; margin-right:4px; }
+
+  /* ── 野外笔记本（右侧） ── */
+  .omap #notebook {
+    grid-column:2; grid-row:1; position:relative; min-height:0;
+    margin: 18px 18px 18px 6px; display:flex; flex-direction:column;
+    background: var(--paper-hi);
+    box-shadow: 0 1px 2px rgba(30,26,20,.12), 0 14px 40px -18px rgba(30,26,20,.4);
+  }
+  .omap #notebook::before {  /* 装订线 */
+    content:""; position:absolute; left:-8px; top:0; bottom:0; width:7px;
+    background: linear-gradient(90deg, rgba(30,26,20,.16), transparent);
+  }
+  .omap .nb-head {
+    flex:none; padding: 15px 20px 13px; border-bottom: 1px solid var(--rule-soft);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .omap .nb-head .t { font-family: var(--label); font-size:10px; letter-spacing:.16em; color: var(--ink-3); }
+  .omap .nb-head .n { font-family: var(--label); font-size:13px; color: var(--ink-2); letter-spacing:.06em; }
+  .omap .nb-body { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain;
+            scrollbar-width:thin; scrollbar-color: var(--ink-3) transparent; padding: 4px 22px 22px; }
+  .omap .nb-body::-webkit-scrollbar { width:3px; }
+  /* 原本是深色 thumb 外加 3px 浅边框，内容短时看起来就是一个突兀的黑点。
+   改为一道极细的赭色墨线，无边框、无圆角。 */
+  .omap .nb-body::-webkit-scrollbar-thumb { background: rgba(138,90,48,.42); border:0; border-radius:0; }
+
+  .omap .plate { height: 148px; margin: 6px -6px 2px; display:flex; align-items:center; justify-content:center; }
+  .omap .plate svg { height:100%; max-width:100%; }
+  .omap .plate.reveal svg { animation: ink .7s ease both; }
+  @keyframes ink{
+    0%{ opacity:0; filter: blur(2px) contrast(.6); transform: scale(.97) translateY(3px); }
+    55%{ opacity:1; filter: blur(0) contrast(1.1); }
+    100%{ opacity:1; filter:none; transform:none; }
+  }
+  .omap .plate .ln { fill:none; stroke: var(--ink); stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .omap .plate .ln.thin { stroke-width:.85; opacity:.72; }
+  .omap .plate .ln.dash { stroke-dasharray:3 3; }
+  .omap .plate .sh1 { fill:url(#p-stip); } .omap .plate .sh2 { fill:url(#p-h1); } .omap .plate .sh3 { fill:url(#p-hx); }
+  .omap .plate .ac { fill: var(--accent); }
+
+  .omap .title-row { display:flex; align-items:flex-start; gap:10px; }
+  .omap .title-row .ti { min-width:0; }
+  .omap .card-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-family: var(--label);
+              font-size:9.5px; letter-spacing:.12em; color: var(--ink-3); margin-bottom:6px; }
+  .omap .badge { display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:100px; letter-spacing:.04em;
+          border:1px solid var(--rule); }
+  .omap .badge.hard { color: var(--accent); border-color: rgba(27,63,160,.4); background: var(--accent-lo); }
+  .omap .badge.conj { color: var(--ink-2); }
+  .omap .badge.myth { color: var(--ink-3); }
+  .omap .badge.dispute { color: var(--ink); border-style:dashed; }
+  .omap .nb-body h2 { font-size:24px; line-height:1.2; }
+  .omap .nb-body .lat { font-family: var(--serif-gr); font-style:italic; font-weight:400; font-size:12.5px; color: var(--ink-3); }
+  .omap .oneline { margin-top:9px; font-family: var(--serif-cn); font-size:16px; line-height:1.6; }
+  .omap .addr { margin-top:10px; padding-top:9px; border-top:1px solid var(--rule-soft); font-size:12px; color:var(--ink-2); line-height:1.55;
+         display:flex; gap:7px; align-items:baseline; flex-wrap:wrap; }
+  .omap .addr b { font-family: var(--label); font-size:9px; letter-spacing:.12em; color: var(--ink-3); font-weight:400; flex:none; }
+
+  .omap .fld { padding:14px 0; border-bottom:1px solid var(--rule-soft); }
+  .omap .fld:last-child { border-bottom:0; padding-bottom:2px; }
+  .omap .fld h3 { font-family: var(--label); font-size:9.5px; font-weight:400; letter-spacing:.14em; color: var(--ink-3); margin-bottom:6px; }
+  .omap .fld p { font-size:13.6px; color: var(--ink-2); line-height:1.74; }
+  .omap .fld p em { font-style:normal; color: var(--ink); font-weight:600; }
+  .omap .fld p + p { margin-top:8px; }
+
+  .omap .quote { margin-top:10px; padding:9px 0 9px 13px; border-left:2px solid var(--rule);
+          font-family: var(--serif-cn); font-size:13.5px; line-height:1.66; color: var(--ink); }
+  .omap .quote cite { display:block; font-family: var(--label); font-style:normal; font-size:9.5px;
+               letter-spacing:.1em; color: var(--ink-3); margin-top:7px; }
+
+  .omap .flag { margin-top:10px; padding:10px 12px; border-radius:2px; background: var(--accent-lo);
+         font-size:12.8px; line-height:1.66; color: var(--ink); border:1px solid rgba(27,63,160,.18); }
+  .omap .flag b { color: var(--accent); font-weight:600; }
+
+  .omap .fld.limit { background: var(--paper-lo); margin:14px -10px 0; padding:13px 22px;
+              border-bottom:0; border-top:1px solid var(--rule-soft); }
+  .omap .fld.limit h3 { color: var(--ink); }
+  .omap .fld.limit .yes { color: var(--ink); font-size:13.6px; line-height:1.74; }
+  .omap .fld.limit .no { color: var(--ink-2); font-size:13.6px; line-height:1.74; margin-top:8px;
+                  padding-left:13px; border-left:2px solid var(--ink); }
+  .omap .fld.limit .no b { color: var(--ink); font-weight:600; }
+
+  .omap .nb-nav { flex:none; display:flex; gap:8px; padding: 0 20px 16px; }
+  .omap .nb-nav button { flex:1; font-size:12px; cursor:pointer; padding:8px; border-radius:2px;
+                  border:1px solid var(--rule); background:transparent; color:var(--ink-2); }
+  .omap .nb-nav button:hover { border-color:var(--ink-3); color:var(--ink); }
+
+  /* 「全灭」空态 */
+  .omap .void { padding: 40px 16px 30px; }
+  .omap .void .k { font-family: var(--label); font-size:9.5px; letter-spacing:.16em; color: var(--accent); }
+  .omap .void h2 { font-size: clamp(28px, 3.4vw, 38px); line-height:1.16; margin-top:12px; color: var(--accent); }
+  .omap .void p { margin-top:16px; font-size:14px; line-height:1.82; color:var(--ink-2); }
+  .omap .void p.last { margin-top:14px; font-family: var(--serif-cn); font-size:18px; line-height:1.6; color:var(--ink); font-weight:700; }
+
+  /* ── 时间尺（底部，画在纸上） ── */
+  .omap #chron { grid-column: 1 / -1; grid-row:2; position:relative; padding: 10px 20px 8px;
+          border-top: 1px solid var(--rule-soft); display:flex; flex-direction:column; justify-content:center; }
+  .omap .chron-head { display:flex; align-items:baseline; justify-content:space-between; gap:14px; margin-bottom:6px; }
+  .omap .chron-head h3 { font-family: var(--label); font-size:9.5px; font-weight:400; letter-spacing:.14em; color: var(--ink-3); }
+  .omap .chron-head span { font-size:11.5px; color: var(--ink-3); text-align:right; }
+  .omap .chron-head span b { color: var(--ink); font-weight:600; }
+  .omap .chron-bar { display:flex; height:14px; width:100%; gap:1px; border-top:1px solid var(--rule); border-bottom:1px solid var(--rule); padding:2px 0; }
+  .omap .chron-seg { height:100%; min-width:1px; cursor:pointer; border:0; padding:0; transition:opacity .22s; }
+  .omap .chron-seg:hover { opacity:.8 !important; }
+  .omap .chron-ends { display:flex; justify-content:space-between; margin-top:4px; font-family:var(--label); font-size:9px; letter-spacing:.08em; color:var(--ink-3); }
+  .omap .chron-note { margin-top:2px; font-size:11.5px; color:var(--ink-2); line-height:1.5; text-align:center; }
+
+  /* ── 折角标签（右下） ── */
+  .omap #tabs { position:absolute; right:0; bottom:76px; z-index:3; display:flex; flex-direction:column; gap:1px; }
+  .omap .foldtab {
+    cursor:pointer; font-size:12px; color: var(--ink-2); letter-spacing:.04em;
+    padding:8px 16px 8px 18px; border:1px solid var(--rule); border-right:0;
+    background: linear-gradient(180deg, rgba(246,242,230,.92), rgba(227,220,198,.92));
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+    transition: color .15s, padding-right .15s;
+  }
+  .omap .foldtab:hover { color: var(--ink); padding-right: 22px; }
+
+  /* 夹页 —— 从纸边滑入，盖在地图上 */
+  .omap .leaflet {
+    position:absolute; top: 20px; bottom: 20px; right:-1px; z-index:4;
+    width: min(560px, 86vw); background: var(--paper-hi);
+    box-shadow: -8px 0 34px -10px rgba(30,26,20,.4), 0 1px 2px rgba(30,26,20,.12);
+    border-left:1px solid var(--rule); border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    transform: translateX(105%); transition: transform .5s cubic-bezier(.4,0,.2,1);
+    display:flex; flex-direction:column;
+  }
+  .omap .leaflet.open { transform: translateX(0); }
+  .omap .leaflet-head { flex:none; display:flex; align-items:baseline; justify-content:space-between; gap:14px;
+                 padding:16px 20px 12px; border-bottom:1px solid var(--rule-soft); }
+  .omap .leaflet-head h3 { font-family: var(--label); font-size:10px; font-weight:400; letter-spacing:.16em; color: var(--ink-2); }
+  .omap .leaflet-head button { font: inherit; font-size:12px; cursor:pointer; border:0; background:transparent; color:var(--ink-3); }
+  .omap .leaflet-head button:hover { color:var(--ink); }
+  .omap .leaflet-body { flex:1 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:16px 22px 30px;
+                 scrollbar-width:thin; scrollbar-color: var(--ink-3) transparent; }
+
+  /* 全览格 */
+  .omap .grid { display:grid; gap:9px; grid-template-columns: repeat(auto-fill, minmax(108px, 1fr)); }
+  .omap .tile { font:inherit; cursor:pointer; padding:9px 6px 9px; text-align:center; background:transparent;
+         border:1px solid var(--rule-soft); color:var(--ink-2); transition: border-color .15s, background .15s, opacity .3s;
+         display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .omap .tile:hover { border-color: var(--ink-3); }
+  .omap .tile.sel { border-color: var(--accent); background: var(--accent-lo); }
+  .omap .tile.dim { opacity:.17; }
+  .omap .tile .idx { font-family: var(--label); font-size:9px; color: var(--ink-3); letter-spacing:.06em; }
+  .omap .tile .nm { font-size:11px; line-height:1.3; color: var(--ink); }
+  .omap .tile .illus { width:100%; max-width:76px; height:auto; display:block; }
+
+  /* 图版通用（全览格 + 裂格 + 夹页里的小图） */
+  .omap .illus .ln { fill:none; stroke: var(--ink); stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+  .omap .illus .ln.thin { stroke-width:.85; opacity:.72; }
+  .omap .illus .ln.dash { stroke-dasharray:3 3; }
+  .omap .illus .sh1 { fill:url(#p-stip); } .omap .illus .sh2 { fill:url(#p-h1); } .omap .illus .sh3 { fill:url(#p-hx); }
+  .omap .illus .ac { fill: var(--accent); }
+
+  /* 图例 / 参考文献 正文 */
+  .omap .lgroup { margin-bottom:18px; }
+  .omap .lgroup h4 { font-family: var(--label); font-size:9.5px; font-weight:400; letter-spacing:.14em; color:var(--ink-3); margin:0 0 8px; }
+  .omap .lgroup ul { margin:0; padding:0; }
+  .omap .lgroup li { list-style:none; font-size:12.8px; color:var(--ink-2); margin-bottom:9px; display:flex; gap:9px; align-items:flex-start; line-height:1.6; }
+  .omap .lgroup .sw { flex:none; margin-top:5px; }
+  .omap .lgroup b { color:var(--ink); font-weight:600; }
+  .omap .lgroup .note { font-size:12px; color:var(--ink-3); line-height:1.66; margin-top:4px; }
+  .omap .dnote { margin-top:14px; padding-top:12px; border-top:1px solid var(--rule-soft); font-size:12.8px; color:var(--ink-2); line-height:1.68; }
+  .omap .dnote b { color:var(--ink); font-weight:600; }
+
+  .omap .refs ol { margin:0; padding-left:19px; }
+  .omap .refs li { font-size:12.4px; line-height:1.68; color:var(--ink-2); margin-bottom:8px; }
+  .omap .refs li b { color:var(--ink); font-weight:600; }
+  .omap .refs .cap { font-size:12.4px; color:var(--ink-3); margin-bottom:12px; }
+  .omap .refs .foot { margin-top:16px; padding-top:14px; border-top:1px solid var(--rule-soft); font-size:12.6px; color:var(--ink-3); line-height:1.78; }
+  .omap .refs .foot p + p { margin-top:10px; }
+  .omap .refs .foot b { color:var(--ink-2); font-weight:600; }
+
+  /* ══ 竖屏 ════════════════════════════════════════════════════════ */
+  @media (max-width: 940px) {
+    .omap #stage { grid-template-columns: minmax(0,1fr); grid-template-rows: minmax(0,1fr) minmax(0,1.1fr) 76px; }
+    .omap #chart { grid-column:1; grid-row:1; }
+    .omap #notebook { grid-column:1; grid-row:2; margin: 6px 14px 6px; }
+    .omap #notebook::before { display:none; }
+    .omap .cartouche { max-width: 320px; padding: 12px 14px 11px; }
+    .omap .cartouche h1 { font-size: 22px; }
+    .omap .thesis { font-size:11.5px; }
+    .omap .legendbox { max-width: 60%; padding: 10px 12px; }
+    .omap #tabs { bottom: 76px; }
+    .omap .crease.c1 { top: 33.4%; } .omap .crease.c2 { top: 66.7%; }
+    .omap .leaflet { top: 12px; bottom: 12px; }
+  }
+  @media (max-width: 620px){
+    .omap .cartouche { top:12px; left:12px; max-width: calc(100% - 24px); }
+    .omap .legendbox { left:12px; bottom:12px; max-width: calc(100% - 24px); }
+    /* 窄屏：海图只留编号圆点，隐藏文字标签 */
+    .omap svg#map .lbl, .omap svg#map .city text, .omap svg#map .gratlabel, .omap svg#map .zone-tag { display:none; }
+    .omap .node .num { font-size:12px; }
+    .omap .node .ring { r:15; }
+    .omap .node .core { r:8; }
+    .omap .node .lbl { display:none; }
+    .omap .plate { height: 118px; }
+    .omap .nb-body { padding: 2px 16px 18px; }
+    .omap .nb-head { padding: 12px 16px 11px; }
+    .omap .nb-nav { padding: 0 16px 14px; }
+    .omap .foldtab { font-size:11px; padding:7px 12px 7px 14px; }
+    .omap .grid { grid-template-columns: repeat(3, 1fr); gap:6px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .omap * { transition-duration:.01ms !important; animation-duration:.01ms !important; }
+  }
+
+/* ═══ 分阶段显现的乘数变量（由主时间轴驱动，见 EpicTimeline）═══
+   默认全为 1，即地图完全显现；归乡段自 0 递增至 1。 */
+.omap .node .lbl, .omap .node .num, .omap .node .dispute, .omap .malea-tag, .omap .scaletext, .omap .nlab { opacity: 1; }

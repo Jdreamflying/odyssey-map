@@ -1,0 +1,47 @@
+<!doctype html><meta charset="utf-8"><body style="font:12px monospace;white-space:pre"><div id="out">start</div>
+<script>
+const O=document.getElementById('out'); const L=[]; const P=x=>{L.push(x);O.textContent=L.join('\n');};
+const f=document.createElement('iframe');
+f.style.cssText='width:1400px;height:860px;border:0;position:absolute;left:0;top:0';
+f.src='./index.html?debug=1'; document.body.appendChild(f);
+f.onload=()=>{ setTimeout(()=>{ try{ run(); }catch(e){ P('ERROR: '+e.message); } }, 4500); };
+function run(){
+  const w=f.contentWindow, d=f.contentDocument;
+  const tl=w.__odyssey&&w.__odyssey.tl;
+  if(tl) tl.time(14.6);
+  const q=s=>d.querySelectorAll(s).length;
+  P('=== 古典制图层 ===');
+  P('  恒向线 rl='+q('.omap .rl')+'   隐形圆='+q('.carto__hidden-circle')+'   玫瑰节点='+q('.carto__nexus'));
+  P('  主风玫瑰 blade='+q('.rose__blade')+' tick='+q('.rose__tick')+' fleur='+q('.rose__fleur'));
+  P('  海岸排线='+q('.carto__coast use')+'  点刻='+q('.carto__stipple')+'  波纹='+q('.wv'));
+  P('  糖块山='+q('.mtn')+' 山影='+q('.mtn__shade')+' 河流='+q('.river')+' 聚落='+q('.town'));
+  P('  古典地名='+q('.cname'));
+  const tr=d.querySelector('.omap .trail');
+  P('  航线 stroke='+(tr?w.getComputedStyle(tr).stroke:'n/a'));
+  P('');P('=== 布局 ===');
+  const sr=d.querySelector('.map-cartouche-slot').getBoundingClientRect();
+  const cr=d.querySelector('#chart').getBoundingClientRect();
+  const nr=d.querySelector('#notebook').getBoundingClientRect();
+  P('  题记 '+sr.width.toFixed(0)+'x'+sr.height.toFixed(0)+'  宽280-360:'+(sr.width>=279&&sr.width<=361?'OK':'NG')+'  高<=120:'+(sr.height<=121?'OK':'NG '+sr.height.toFixed(0)));
+  P('  海图 top='+cr.top.toFixed(0)+' h='+cr.height.toFixed(0));
+  P('  笔记本left='+nr.left.toFixed(0)+' 海图right='+cr.right.toFixed(0)+' 重叠:'+(nr.left>=cr.right-2?'无':'有'));
+  P('  顶栏display='+w.getComputedStyle(d.querySelector('.mapheader')).display);
+  P('');P('=== 命中测试 ===');
+  let pass=0,bad=[];
+  const hit=(el,lab)=>{ if(!el){bad.push(lab+':缺失');return;}
+    const r=el.getBoundingClientRect(); if(!r.width||!r.height){bad.push(lab+':尺寸0');return;}
+    const t=d.elementFromPoint(r.left+r.width/2,r.top+r.height/2);
+    if(el===t||el.contains(t)||(t&&t.contains(el))) pass++; else bad.push(lab+'<-'+(t?(t.getAttribute('class')||t.tagName):'null'));};
+  [...d.querySelectorAll('.omap .plaque')].forEach((b,i)=>hit(b,'图例'+i));
+  [...d.querySelectorAll('.omap .node')].forEach((n,i)=>hit(n,'node'+i));
+  hit(d.querySelector('#prev'),'prev'); hit(d.querySelector('#next'),'next');
+  [...d.querySelectorAll('.foldtab')].forEach((b,i)=>hit(b,'tab'+i));
+  P('  通过 '+pass+'   失败 '+bad.length+(bad.length?' -> '+bad.join(' | '):''));
+  const stg=d.querySelector('.landmark-stage'), s2=stg.getBoundingClientRect();
+  P('');P('=== Landmark 舞台 ===');
+  P('  '+s2.width.toFixed(0)+'x'+s2.height.toFixed(0)+' @('+s2.left.toFixed(0)+','+s2.top.toFixed(0)+')  z='+w.getComputedStyle(stg).zIndex+'  pe='+w.getComputedStyle(stg).pointerEvents);
+  P('  #chart z='+w.getComputedStyle(d.querySelector('#chart')).zIndex+'  mount z='+w.getComputedStyle(d.querySelector('.omap__mount')).zIndex);
+  const np=d.querySelector('.note__plate');
+  P('  note__plate: '+(np?w.getComputedStyle(np).display:'元素不存在'));
+}
+</script>

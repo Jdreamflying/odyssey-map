@@ -1,0 +1,40 @@
+<!doctype html><meta charset="utf-8"><body style="font:12px monospace;white-space:pre"><div id="out">start</div>
+<script>
+const O=document.getElementById('out'),L=[],P=x=>{L.push(x);O.textContent=L.join('\n');};
+const S=m=>new Promise(r=>setTimeout(r,m));
+const f=document.createElement('iframe');
+f.style.cssText='width:1400px;height:860px;border:0;position:absolute;left:0;top:0';
+f.src='./index.html?debug=1'; document.body.appendChild(f);
+f.onload=async()=>{ await S(5200);
+ const w=f.contentWindow,d=f.contentDocument;
+ if(w.__odyssey) w.__odyssey.tl.time(14.6);
+ await S(600);
+ P('=== Landmark 14 站 ===');
+ P('站 可见 文件              opacity  显示尺寸');
+ const vis=()=>[...d.querySelectorAll('.landmark')].filter(x=>{const c=w.getComputedStyle(x);
+   return c.visibility!=='hidden'&&+c.opacity>0.02;});
+ let allOne=true,ops=[];
+ for(let i=0;i<14;i++){
+   d.dispatchEvent(new w.CustomEvent('odyssey:select',{detail:{index:i}}));
+   await S(1650);
+   const v=vis(); if(v.length!==1) allOne=false;
+   const img=v.length?v[0].querySelector('img'):null;
+   const r=img?img.getBoundingClientRect():null;
+   const op=v.length?+w.getComputedStyle(v[0]).opacity:0; ops.push(op);
+   P(String(i).padStart(2)+'  '+v.length+'   '+((img?img.getAttribute('src').split('/').pop():'(无)')+'                  ').slice(0,20)+
+     op.toFixed(2)+'    '+(r?r.width.toFixed(0)+'x'+r.height.toFixed(0):'-'));
+ }
+ P('');
+ P('每次恰好 1 张: '+(allOne?'YES':'NO'));
+ P('opacity 范围: '+Math.min(...ops).toFixed(2)+' – '+Math.max(...ops).toFixed(2)+'  (目标 0.26–0.38)');
+ for(let i=0;i<7;i++){ d.dispatchEvent(new w.CustomEvent('odyssey:select',{detail:{index:[0,3,7,13,8,9,2][i]}})); await S(100);}
+ await S(1700);
+ P('快速连点 7 次 → 可见 '+vis().length+' 张 (应为 1)');
+ P('');P('=== 航线重演 ===');
+ const pb=[...d.querySelectorAll('.plaque')].find(b=>/重演|播放/.test(b.textContent));
+ P('  按钮文字: '+(pb?pb.textContent.trim():'未找到'));
+ P('  按钮内联色: "'+(pb?pb.getAttribute('style')||'(无)':'-')+'"');
+ P('');P('=== 夹页说明 ===');
+ P('  航线说明='+d.querySelectorAll('.how-route').length+'  记号说明='+d.querySelectorAll('.how-legend').length);
+};
+</script>

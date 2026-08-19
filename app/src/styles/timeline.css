@@ -1,0 +1,536 @@
+/* ═══════════════════════════════════════════════════════════
+   史诗序幕舞台 —— 两张纸：序幕纸在上，地图纸在下
+   ═══════════════════════════════════════════════════════════
+
+   ⚠ 命名契约（影片侧）
+   ───────────────────────────────────────────────────────────
+   本表只允许出现 Cinema* 前缀的类名。影片曾经用的是 .stage /
+   .sheet / .sheet__paper / .cinema / .p —— 全是任何一张表都可能
+   重名的通用词。而 map.css 是从别的项目原样移植进来的，里面有
+   .plate / .grid / .tile / .flag / .land / .crease / .node 这类
+   同样通用的名字，且当时**一条都没有作用域**：只要哪天影片里出现
+   一个同名类，样式就会当场串台（例如 map.css 的
+   `.plate{height:148px}` 会把一整幕图版压成左上角一小条）。
+
+   现在两侧各自封闭：
+     影片   →  .Cinema*          （本表，全局，只此一处定义）
+     地图   →  .omap 后代选择器   （map.css / map-v2.css / map-v3.css）
+
+   两条规矩，改动时必须守住：
+     1. 本表不得出现不带 Cinema 前缀的类名；
+     2. 地图三张表的每条选择器都必须以 .omap 打头。
+   地图容器语义上就是 MapStage / MapChart / MapPanel，但它们在 DOM 里
+   仍是 #stage / #chart / #notebook —— bootMap.js 按 id 取元素，
+   本轮不动地图逻辑，所以保留 id，靠 .omap 作用域保证隔离。 */
+
+.CinemaViewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.CinemaSheet {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.CinemaSheet--map  { z-index: 1; }
+
+/* ⚠⚠ 影片阶段绝不绘制地图那张纸 —— 这条规则是影片能不能播的关键。
+   ────────────────────────────────────────────────────────────────
+   序幕纸不透明地盖在地图纸上，但浏览器并不因此跳过下面那层：
+   地图现在是 292 环 / 7250 顶点的海岸线 + 两层海岸排线 + 山地排线
+   + 波纹，序幕每animate一帧，这一整层都要重新栅格化一次。
+
+   实测（1920×1080 无头，采样 window.__cinema.frameRef）：
+     现状（照画）................ 3.6 FPS，影片卡在 5.1s 再也走不动
+     只关 mix-blend-mode ........ 4.6 FPS，仍然卡在 6.9s
+     影片阶段隐藏地图纸 ......... 14.4 FPS，14.6s 完整走完 ✅
+     根本不挂地图层 ............. 31.7 FPS
+
+   为什么「卡住」而不是「变慢」：useCinema 把 dt 夹在 0.08s/帧，
+   3.6 FPS 时影片每真实秒只推进 0.29s，看起来就是定格在某一幕。
+   这就是「影片只剩背景 / 只显示一小块」的真正来源 —— 不是 CSS 选择器
+   串台，是合成器层面的互相拖累。
+
+   用 visibility 而不是 display：display:none 会让布局消失，
+   bootMap 初始化时的尺寸测量会全部拿到 0。visibility 保留布局、跳过绘制。
+   阶段在 t=12.0 切到 rolling，而地图第一个显现 cue 是 12.3，留了 0.3s 余量。 */
+.app[data-phase='epic'] .CinemaSheet--map { visibility: hidden; }
+
+/* 卷起过程中地图是**静止**的（显现动画已全部取消，见 map-v3.css 顶部），
+   所以它只需要被重新合成、不需要被重新绘制。contain:paint 把这一层的
+   绘制范围钉死在自身边框内，浏览器就能把它当成一块独立的静态位图。
+   实测卷起那 2.6 秒：6.5 → 12.7（取消显现动画）→ 14.2 FPS（再加这条）。
+   本来就是 position:absolute + inset:0 + overflow:hidden，
+   contain:paint 不改变任何裁剪或定位语义，只是把这件事告诉浏览器。 */
+.CinemaSheet--map { contain: paint; }
+
+/* 序幕纸完全是装饰层，不含任何可交互内容。
+   必须 pointer-events:none —— 否则卷走之后容器仍盖在地图上，
+   地图的筛选按钮、播放航线、站点全都收不到点击。 */
+.CinemaSheet--epic {
+  z-index: 2;
+  --roll: 0;
+  --lift: 0;
+  will-change: transform;
+  pointer-events: none;
+}
+
+/* 序幕纸本体：自右向左被卷走 */
+.CinemaSheet__paper {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(var(--roll) * 1%) 0 0);
+}
+
+/* ── 卷轴：对角线卷起 ─────────────────────────────────────
+   与上一版的根本差别：裁切边是**倾斜**的，卷筒也随之倾斜，
+   于是纸不是「从右往左推过去」，而是自右下角起翘、
+   沿对角线被卷成筒、最后斜着抽离。
+
+   --roll 0→100 推动倾斜的裁切边自右下向左上扫过
+   --lift 0→1   右下角起翘（先于 --roll 发生）
+   倾斜量 34%：裁切边上端比下端靠右 34% 视口宽，约 28°。 */
+
+.CinemaSheet__paper {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    0% 0%,
+    calc(134% - var(--roll) * 1.68%) 0%,
+    calc(100% - var(--roll) * 1.68%) 100%,
+    0% 100%
+  );
+}
+
+.CinemaRoll {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  perspective: 1400px;
+}
+
+/* 右下角翘起的那一角：真实的 3D 掀起，露出纸背 */
+.CinemaRoll__lift {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 24%;
+  height: 30%;
+  transform-origin: 100% 100%;
+  transform:
+    rotateX(calc(var(--lift) * -46deg))
+    rotateY(calc(var(--lift) * 26deg))
+    translateZ(calc(var(--lift) * 14px));
+  opacity: calc(min(var(--lift) * 3, 1) * (1 - var(--roll) * 0.03));
+  clip-path: polygon(100% 0%, 100% 100%, 0% 100%);
+  background:
+    linear-gradient(215deg,
+      rgba(58, 40, 16, 0.42) 0%,
+      rgba(140, 112, 64, 0.3) 14%,
+      var(--parchment-2) 34%,
+      var(--parchment-0) 62%,
+      #f5eeda 100%);
+  box-shadow:
+    -8px -8px 22px rgba(38, 26, 10, 0.34),
+    inset 0 0 0 1px rgba(58, 40, 16, 0.22);
+}
+
+/* 卷筒投在平摊纸面上的阴影，随倾斜边一起走 */
+.CinemaRoll__shade {
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: calc(117% - var(--roll) * 1.68%);
+  width: 190px;
+  transform: translateX(-100%) rotate(28deg);
+  transform-origin: 100% 50%;
+  opacity: min(var(--roll), 1);
+  background: linear-gradient(90deg, transparent 0%, rgba(44, 30, 12, 0.05) 42%, rgba(44, 30, 12, 0.26) 100%);
+}
+
+/* 纸背：即将卷进筒里的那一小段，颜色明显转深 */
+.CinemaRoll__back {
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  left: calc(117% - var(--roll) * 1.68%);
+  width: 44px;
+  transform: translateX(-100%) rotate(28deg);
+  transform-origin: 100% 50%;
+  opacity: min(var(--roll), 1);
+  background: linear-gradient(90deg,
+    rgba(150, 120, 70, 0.04) 0%,
+    rgba(104, 76, 34, 0.24) 52%,
+    rgba(56, 38, 16, 0.4) 100%);
+}
+
+/* 卷筒本体：倾斜的纸筒，多段渐变做出筒面与层叠边 */
+.CinemaRoll__cyl {
+  position: absolute;
+  top: 50%;
+  left: calc(117% - var(--roll) * 1.68%);
+  width: 92px;
+  height: 190%;
+  transform: translate(-50%, -50%) rotate(28deg);
+  opacity: min(var(--roll), 1);
+  border-radius: 9px / 14px;
+  background:
+    repeating-linear-gradient(90deg, rgba(58, 40, 16, 0.075) 0 1px, transparent 1px 7px),
+    linear-gradient(90deg,
+      rgba(48, 32, 12, 0.56) 0%,
+      rgba(126, 98, 54, 0.36) 6%,
+      var(--parchment-2) 18%,
+      var(--parchment-0) 30%,
+      #f8f1de 38%,
+      var(--parchment-1) 52%,
+      rgba(116, 90, 50, 0.44) 66%,
+      var(--parchment-2) 78%,
+      rgba(70, 48, 20, 0.52) 92%,
+      rgba(34, 22, 8, 0.66) 100%);
+  box-shadow:
+    0 0 0 1px rgba(48, 32, 12, 0.38),
+    10px 0 26px rgba(34, 22, 8, 0.34),
+    inset 0 3px 0 rgba(255, 250, 236, 0.42),
+    inset 0 -3px 0 rgba(48, 32, 12, 0.26);
+}
+
+/* 卷口那一道翻出来的破损边 */
+.CinemaRoll__edge {
+  position: absolute;
+  top: -1%;
+  bottom: -1%;
+  right: -5px;
+  width: 11px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, rgba(56, 38, 16, 0.5), rgba(150, 120, 70, 0.3));
+  -webkit-mask-image: repeating-linear-gradient(0deg, #000 0 7px, transparent 7px 9px, #000 9px 17px, transparent 17px 18px);
+  mask-image: repeating-linear-gradient(0deg, #000 0 7px, transparent 7px 9px, #000 9px 17px, transparent 17px 18px);
+}
+
+/* ── 极淡的老世界地图纹理 ───────────────────────────────── */
+
+.CinemaWorldmap {
+  position: absolute;
+  inset: -6%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: multiply;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: worldmap-drift 240s ease-in-out infinite alternate;
+}
+
+@keyframes worldmap-drift {
+  from { transform: rotate(-1.6deg) scale(1.02); }
+  to   { transform: rotate(1.6deg) scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .CinemaWorldmap { animation: none; }
+}
+
+/* ── 十二幕舞台 ─────────────────────────────────────────── */
+
+.CinemaStage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+/* ── 单幕 ─────────────────────────────────────────────────── */
+
+.CinemaScene {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  will-change: opacity, transform;
+}
+
+.CinemaScene__inner {
+  position: absolute;
+  inset: 0;
+  will-change: transform, filter;
+}
+
+/* 镜头层：图版在其中居中。图版不必铺满视口 —— 四周本就该露出羊皮纸。 */
+.CinemaScene__bg,
+.CinemaScene__fg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+}
+
+/* ── 图版本体 ───────────────────────────────────────────────
+   一块压在纸上的铜版：极轻的投影 + 一圈版痕，让它「印在」纸上
+   而不是「浮在」纸上。 */
+.CinemaScene__plate {
+  position: relative;
+  margin: 0;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 16 / 9;
+  box-shadow:
+    0 1px 0 rgba(255, 250, 236, 0.5),
+    0 2px 10px rgba(36, 26, 13, 0.13),
+    0 0 0 1px rgba(36, 26, 13, 0.16);
+}
+
+/* cover 幕：图版即视口，出血满铺，取消版痕与投影 */
+.CinemaScene--cover .CinemaScene__plate {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  box-shadow: none;
+}
+
+/* custom 幕：宽高由 frame 完全指定，仍保留版痕 */
+.CinemaScene--custom .CinemaScene__plate {
+  aspect-ratio: auto;
+}
+
+.CinemaScene__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* AI 图本身已是羊皮纸暖褐调，不做二次上色，只极轻统一 */
+  filter: sepia(0.12) contrast(1.05) brightness(1.02);
+}
+
+.CinemaScene--contain .CinemaScene__img,
+.CinemaScene--custom .CinemaScene__img {
+  object-fit: contain;
+}
+
+.CinemaScene--cover .CinemaScene__img {
+  object-fit: cover;
+}
+
+/* 纸味：让图版与羊皮纸融合，而不是浮在上面的一张照片 */
+.CinemaScene__plate::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 100% at 50% 42%, transparent 58%, rgba(36, 26, 13, 0.2) 100%),
+    linear-gradient(0deg, rgba(226, 210, 178, 0.08), rgba(226, 210, 178, 0.08));
+  mix-blend-mode: multiply;
+}
+
+/* ── 尘层 ─────────────────────────────────────────────────── */
+
+.CinemaScene__dust {
+  position: absolute;
+  inset: -6%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.CinemaDust__p {
+  position: absolute;
+  border-radius: 999px;
+  background: currentColor;
+  color: var(--ink);
+}
+
+.CinemaDust__p--rain { border-radius: 0; transform: rotate(15deg); }
+
+.CinemaDust__p--mist {
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(240, 230, 205, 0.85) 0%, rgba(240, 230, 205, 0) 70%);
+}
+
+/* ── 卷首题名 ───────────────────────────────────────────────
+   浮现一次即淡去，不是常驻标题。 */
+
+.CinemaPrologue {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  visibility: hidden;
+  padding: 0 24px;
+}
+
+.CinemaPrologue__gr {
+  margin: 0 0 0.9em;
+  font-family: var(--serif-gr);
+  font-size: clamp(0.9rem, 2.2vw, 1.3rem);
+  letter-spacing: 0.44em;
+  text-indent: 0.44em;
+  color: var(--sepia);
+}
+
+.CinemaPrologue__en {
+  margin: 0;
+  font-family: var(--serif-gr);
+  font-weight: 400;
+  font-size: clamp(2rem, 6.5vw, 4.4rem);
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--ink);
+  text-shadow: 0 1px 0 rgba(255, 250, 236, 0.75);
+}
+
+.CinemaPrologue__sub {
+  margin: 1.6em 0 0;
+  font-family: var(--label);
+  font-size: 0.72rem;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* ── 卷标记 ─────────────────────────────────────────────────
+   卷切换时极弱地出现一次，fade in → hold → fade out。 */
+
+.CinemaVolmark {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 18;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+  visibility: hidden;
+  text-align: center;
+}
+
+.CinemaVolmark__no {
+  font-family: var(--serif-gr);
+  font-size: clamp(1.3rem, 3vw, 1.9rem);
+  letter-spacing: 0.2em;
+  text-indent: 0.2em;
+  color: var(--sepia);
+}
+
+.CinemaVolmark__name {
+  font-family: var(--serif-cn);
+  font-weight: 900;
+  font-size: clamp(1rem, 2.4vw, 1.4rem);
+  letter-spacing: 0.36em;
+  text-indent: 0.36em;
+  color: var(--ink);
+}
+
+.CinemaVolmark__en {
+  font-family: var(--label);
+  font-size: 0.64rem;
+  letter-spacing: 0.34em;
+  text-indent: 0.34em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ── 终幕文字 ─────────────────────────────────────────────── */
+
+.CinemaIthaka {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 22;
+  text-align: center;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.CinemaIthaka__gr {
+  margin: 0;
+  font-family: var(--serif-gr);
+  font-size: clamp(1.2rem, 2.8vw, 1.9rem);
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+  color: var(--ink);
+}
+
+.CinemaIthaka__en {
+  margin: 0.8em 0 0;
+  font-family: var(--label);
+  font-size: 0.7rem;
+  letter-spacing: 0.44em;
+  text-indent: 0.44em;
+  text-transform: uppercase;
+  color: var(--sepia);
+}
+
+.CinemaIthaka__cn {
+  margin: 1.7em 0 0;
+  font-family: var(--serif-gr);
+  font-size: 0.86rem;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+}
+
+
+/* ── 缺图占位版 ─────────────────────────────────────────────── */
+
+.CinemaMissing {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(36, 26, 13, 0.5);
+  background: rgba(240, 230, 205, 0.34);
+  overflow: hidden;
+}
+
+.CinemaMissing__hatch { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.34; }
+.CinemaMissing__body { position: relative; text-align: center; padding: 22px; max-width: 42em; }
+
+.CinemaMissing__flag {
+  margin: 0;
+  font-family: var(--label);
+  font-size: clamp(0.7rem, 1.5vw, 0.92rem);
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: var(--parchment-0);
+  background: var(--ink);
+  display: inline-block;
+  padding: 4px 14px 4px 18px;
+}
+
+.CinemaMissing__no {
+  margin: 1.1em 0 0;
+  font-family: var(--serif-gr);
+  font-size: clamp(1rem, 2.2vw, 1.5rem);
+  letter-spacing: 0.16em;
+}
+
+.CinemaMissing__note {
+  margin: 0.85em auto 0;
+  max-width: 34em;
+  font-size: 0.86rem;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+
+/* ── 响应式 ─────────────────────────────────────────────────── */
+
+@media (max-width: 820px) {
+  .CinemaScene__plate { box-shadow: 0 1px 6px rgba(36, 26, 13, 0.14); }
+  .CinemaMissing__note { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .CinemaScene__dust { display: none; }
+}

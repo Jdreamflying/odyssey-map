@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><body style="font:12px monospace;white-space:pre"><div id="out">start</div>
+<script>
+const O=document.getElementById('out'),L=[],P=x=>{L.push(x);O.textContent=L.join('\n');};
+const f=document.createElement('iframe');
+f.style.cssText='width:1400px;height:860px;border:0;position:absolute;left:0;top:0';
+f.src='./index.html?debug=1'; document.body.appendChild(f);
+const S=m=>new Promise(r=>setTimeout(r,m));
+f.onload=async()=>{ await S(5000);
+ const w=f.contentWindow,d=f.contentDocument;
+ if(w.__odyssey) w.__odyssey.tl.time(14.6);
+ await S(500);
+ const vis=()=>[...d.querySelectorAll('.landmark')].filter(x=>{const c=w.getComputedStyle(x);
+   return c.visibility!=='hidden'&&+c.opacity>0.02;});
+ P('站  可见  文件                      opacity  尺寸');
+ for(let i=0;i<13;i++){
+   d.dispatchEvent(new w.CustomEvent('odyssey:select',{detail:{index:i}}));
+   await S(1500);
+   const v=vis();
+   const img=v.length?v[0].querySelector('img'):null;
+   const r=img?img.getBoundingClientRect():null;
+   P(String(i).padStart(2)+'   '+v.length+'    '+
+     ((img?img.getAttribute('src').split('/').pop():'(无)')+'                    ').slice(0,26)+
+     (v.length?(+w.getComputedStyle(v[0]).opacity).toFixed(2):'  - ')+'    '+
+     (r?r.width.toFixed(0)+'x'+r.height.toFixed(0):'-'));
+ }
+ for(let i=0;i<6;i++){ d.dispatchEvent(new w.CustomEvent('odyssey:select',{detail:{index:[0,3,7,12,4,8][i]}})); await S(110);}
+ await S(1600);
+ const v=vis();
+ P('');P('快速连点 6 次 -> 可见='+v.length+' (应为1)  op='+v.map(x=>(+w.getComputedStyle(x).opacity).toFixed(2)).join(','));
+};
+</script>
