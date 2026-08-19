@@ -226,12 +226,13 @@ export default function EpicTimeline({ onActivate, onBeat, registerApi, manualMo
       {/* ── 底层：地图那张纸 ── */}
       <div className="CinemaSheet CinemaSheet--map">
         <Parchment variant="map" seed={7} />
-        <div
-          className="CinemaWorldmap"
-          aria-hidden="true"
-          style={{ backgroundImage: `url(${assetUrl(ASSETS.worldMap)})` }}
-        />
-        <OdysseyMap registerMapLayers={registerMapLayers} interactive={mapLive} />
+        {ASSETS.worldMap && (
+          <div
+            className="CinemaWorldmap"
+            aria-hidden="true"
+            style={{ backgroundImage: `url(${assetUrl(ASSETS.worldMap)})` }}
+          />
+        )}<OdysseyMap registerMapLayers={registerMapLayers} interactive={mapLive} />
       </div>
 
       {/* ── 上层：序幕那张纸，会被卷走 ── */}

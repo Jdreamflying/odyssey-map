@@ -83,7 +83,7 @@ export default function OdysseyScene({ scene, index, registerLayer }) {
         <div className="CinemaScene__bg" ref={bg}>
           <figure className="CinemaScene__plate" style={plateStyle}>
             {scene.image ? (
-              <img className="CinemaScene__img" src={scene.image} alt="" draggable="false" />
+              <img className="CinemaScene__img" src={scene.image} alt="" draggable="false" decoding="async" fetchPriority={index === 0 ? 'high' : 'auto'} />
             ) : (
               <MissingPlate scene={scene} />
             )}

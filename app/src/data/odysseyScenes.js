@@ -33,18 +33,18 @@
 const IMG = (file) => `${import.meta.env.BASE_URL}scenes/${file}`;
 
 export const SCENE_IMAGES = {
-  troyWarBegins:      IMG('01-troy-war-begins.png'),
-  greekArmyMarch:     IMG('02-greek-army-march.png'),
-  fallOfTroy:         IMG('03-fall-of-troy.png'),
-  odysseusDeparture:  IMG('04-odysseus-departure.png'),
-  stormAtSea:         IMG('05-storm-at-sea.png'),
-  islandOfCyclops:    IMG('06-island-of-cyclops.png'),
-  poseidonAppears:    IMG('07-poseidon-appears.png'),
-  sirens:             IMG('08-sirens.png'),
-  underworld:         IMG('09-underworld.png'),
-  scyllaCharybdis:    IMG('10-scylla-charybdis.png'),
-  returnToIthaca:     IMG('11-return-to-ithaca.png'),
-  endOfVoyage:        IMG('12-end-of-voyage.png'),
+  troyWarBegins:      IMG('01-troy-war-begins.webp'),
+  greekArmyMarch:     IMG('02-greek-army-march.webp'),
+  fallOfTroy:         IMG('03-fall-of-troy.webp'),
+  odysseusDeparture:  IMG('04-odysseus-departure.webp'),
+  stormAtSea:         IMG('05-storm-at-sea.webp'),
+  islandOfCyclops:    IMG('06-island-of-cyclops.webp'),
+  poseidonAppears:    IMG('07-poseidon-appears.webp'),
+  sirens:             IMG('08-sirens.webp'),
+  underworld:         IMG('09-underworld.webp'),
+  scyllaCharybdis:    IMG('10-scylla-charybdis.webp'),
+  returnToIthaca:     IMG('11-return-to-ithaca.webp'),
+  endOfVoyage:        IMG('12-end-of-voyage.webp'),
 };
 
 /* ── 转场五式（VISUAL-BIBLE 卷二 Tab.1）────────────────────────

@@ -84,9 +84,9 @@ export const ROLL = {
 export const ASSETS = {
   music: 'audio/odyssey-intro.mp3',
   paperRoll: 'audio/paper-roll.mp3',
-  parchmentCinema: 'textures/parchment-cinema.png',
-  parchmentMap: 'textures/parchment-map.png',
-  worldMap: 'textures/old-world-map.png',
+  parchmentCinema: 'textures/parchment-cinema.webp',
+  parchmentMap: 'textures/parchment-map.webp',
+  worldMap: null,
   landmarkDir: 'landmarks/',
 };
 

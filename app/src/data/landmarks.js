@@ -51,54 +51,54 @@ import { ASSETS, assetUrl } from './cinema.js';
  */
 export const LANDMARKS = [
   /* 宽横构图：靠宽度撑场面，不需要顶满高度 */
-  { i: 0,  file: '00-troy.png',           scale: 0.81, offsetX: 0,  offsetY: -3, rotation: -0.4, opacity: 0.194,
+  { i: 0,  file: '00-troy.webp',           scale: 0.81, offsetX: 0,  offsetY: -3, rotation: -0.4, opacity: 0.194,
     note: '特洛伊城墙 · 宽横构图，仍是全组最宽的一张' },
-  { i: 1,  file: '01-ismaros.png',        scale: 0.81, offsetX: 0,  offsetY: -2, rotation: 0.5,  opacity: 0.205,
+  { i: 1,  file: '01-ismaros.webp',        scale: 0.81, offsetX: 0,  offsetY: -2, rotation: 0.5,  opacity: 0.205,
     note: '伊斯马罗斯 · 略宽' },
 
-  { i: 2,  file: '02-lotophagi.png',      scale: 0.86, offsetX: -1, offsetY: 2,  rotation: 0.4,  opacity: 0.226,
+  { i: 2,  file: '02-lotophagi.webp',      scale: 0.86, offsetX: -1, offsetY: 2,  rotation: 0.4,  opacity: 0.226,
     note: '食莲人之地 · 低平沙岸，压低' },
 
   /* 用户点名：略显过大 → 缩一档；再压 10% 墨量。中心位置不动（offsetX 维持右偏一点点，
      和上一版 6 相比只回收到 4，仍在原来的构图带上） */
-  { i: 3,  file: '03-cyclops.png',        scale: 0.80, offsetX: 4,  offsetY: -1, rotation: -0.6, opacity: 0.142,
+  { i: 3,  file: '03-cyclops.webp',        scale: 0.80, offsetX: 4,  offsetY: -1, rotation: -0.6, opacity: 0.142,
     note: '独眼巨人 · 全组最小的一张，洞窟满幅墨太重' },
 
-  { i: 4,  file: '04-aeolia.png',         scale: 0.86, offsetX: 1,  offsetY: 0,  rotation: 0.5,  opacity: 0.226,
+  { i: 4,  file: '04-aeolia.webp',         scale: 0.86, offsetX: 1,  offsetY: 0,  rotation: 0.5,  opacity: 0.226,
     note: '风神岛' },
 
   /* 用户点名：保持巨大巨人主题（高竖图，全组最高），但墨量压到全组第二淡 */
-  { i: 5,  file: '05-laestrygonians.png', scale: 0.88, offsetX: 4,  offsetY: -1, rotation: 0,    opacity: 0.134,
+  { i: 5,  file: '05-laestrygonians.webp', scale: 0.88, offsetX: 4,  offsetY: -1, rotation: 0,    opacity: 0.134,
     note: '莱斯特律戈涅斯巨人 · 高竖顶格，靠淡不靠小' },
 
   /* 用户点名：向右移动，让开地图中心 */
-  { i: 6,  file: '06-circe.png',          scale: 0.87, offsetX: 4,  offsetY: 0,  rotation: -0.5, opacity: 0.215,
+  { i: 6,  file: '06-circe.webp',          scale: 0.87, offsetX: 4,  offsetY: 0,  rotation: -0.5, opacity: 0.215,
     note: '喀耳刻 · 右移，避开中央航线丛' },
 
   /* 用户点名：降低不透明度 + 向右 */
-  { i: 7,  file: '07-underworld.png',     scale: 0.84, offsetX: 4,  offsetY: 1,  rotation: 0,    opacity: 0.121,
+  { i: 7,  file: '07-underworld.webp',     scale: 0.84, offsetX: 4,  offsetY: 1,  rotation: 0,    opacity: 0.121,
     note: '冥府 · 全组最淡，只留一团阴影' },
 
   /* 用户点名：略微缩小 + 向右 */
-  { i: 8,  file: '08-sirens.png',         scale: 0.83, offsetX: 1,  offsetY: -2, rotation: 0.6,  opacity: 0.215,
+  { i: 8,  file: '08-sirens.webp',         scale: 0.83, offsetX: 1,  offsetY: -2, rotation: 0.6,  opacity: 0.215,
     note: '塞壬 · 缩一档并右移，不再压迫地图中心' },
 
   /* 用户点名：降低不透明度，只作为海峡危险标记 */
-  { i: 9,  file: '09-scylla.png',         scale: 0.86, offsetX: 4,  offsetY: 0,  rotation: 0,    opacity: 0.11,
+  { i: 9,  file: '09-scylla.webp',         scale: 0.86, offsetX: 4,  offsetY: 0,  rotation: 0,    opacity: 0.11,
     note: '斯库拉 · 巨大不规则，墨量必须最低' },
 
   /* 用户点名：向右移动，别遮住中央地图 */
-  { i: 10, file: '10-thrinacia.png',      scale: 0.81, offsetX: 0,  offsetY: 1,  rotation: 0.3,  opacity: 0.226,
+  { i: 10, file: '10-thrinacia.webp',      scale: 0.81, offsetX: 0,  offsetY: 1,  rotation: 0.3,  opacity: 0.226,
     note: '太阳神牛群 · 宽横构图。offsetX 由 −2 提到 0、并收窄一档：'
         + '左缘从 440px 退到 587px，中央的西西里—爱奥尼亚一段完全让出来了' },
 
   /* 用户点名：整体向右，靠近右侧介绍区 */
-  { i: 11, file: '11-ogygia.png',         scale: 0.88, offsetX: 6,  offsetY: 0,  rotation: 0,    opacity: 0.247,
+  { i: 11, file: '11-ogygia.webp',         scale: 0.88, offsetX: 6,  offsetY: 0,  rotation: 0,    opacity: 0.247,
     note: '俄古癸亚与卡吕普索 · 高竖窄图，右移最多' },
 
-  { i: 12, file: '12-scheria.png',        scale: 0.86, offsetX: 2,  offsetY: -1, rotation: -0.4, opacity: 0.226,
+  { i: 12, file: '12-scheria.webp',        scale: 0.86, offsetX: 2,  offsetY: -1, rotation: -0.4, opacity: 0.226,
     note: '斯刻里亚' },
-  { i: 13, file: '13-ithaca.png',         scale: 0.84, offsetX: 1,  offsetY: 3,  rotation: 0,    opacity: 0.2,
+  { i: 13, file: '13-ithaca.webp',         scale: 0.84, offsetX: 1,  offsetY: 3,  rotation: 0,    opacity: 0.2,
     note: '伊萨卡 · 横向铺开偏低' },
 ];
 

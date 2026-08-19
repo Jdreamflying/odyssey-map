@@ -48,3 +48,7 @@ npm run build
 - 古地图 AssetLayer、真实地理装饰、风玫瑰与拉丁边注
 - Landmark 延后预载，避免与序幕影片争抢带宽
 - 根目录保留可直接发布的静态成品
+
+## 资源加载优化
+
+线上运行时使用 WebP：序幕约 4.31 MB、Landmark 约 6.85 MB、羊皮纸约 0.49 MB。PNG 原始母版保留在 `app/public/`，构建后自动从发布目录剔除，当前 Pages 成品约 16.44 MB。
